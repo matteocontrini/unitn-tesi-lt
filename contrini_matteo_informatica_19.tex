@@ -1,18 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Template per Elaborato di Laurea
-% DISI - Dipartimento di Ingegneria e Scienza dell’Informazione
-%
-% update 2015-09-10
-%
-% Per la generazione corretta del 
-% pdflatex nome_file.tex
-% bibtex nome_file.aux
-% pdflatex nome_file.tex
-% pdflatex nome_file.tex
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % formato FRONTE RETRO
 \documentclass[epsfig,a4paper,11pt,titlepage,twoside,openany]{book}
 \usepackage{epsfig}
@@ -21,9 +6,8 @@
 \usepackage[paperheight=29.7cm,paperwidth=21cm,outer=1.5cm,inner=2.5cm,top=2cm,bottom=2cm]{geometry} % per definizione layout
 \usepackage{titlesec} % per formato custom dei titoli dei capitoli
 
-%%%%%%%%%%%%%%
 % supporto lettere accentate
-%
+
 %\usepackage[latin1]{inputenc} % per Windows;
 \usepackage[utf8x]{inputenc} % per Linux (richiede il pacchetto unicode);
 %\usepackage[applemac]{inputenc} % per Mac.
@@ -36,47 +20,23 @@
 
   % nessuna numerazione
   \pagenumbering{gobble} 
-  \input{pagina_iniziale}
+  \input{parti/pagina_iniziale}
 
   \clearpage
- 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Nota
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Sezione Ringraziamenti opzionale
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  \input{ringraziamenti}
+
+  \input{parti/ringraziamenti}
   \clearpage
   \pagestyle{plain} % nessuna intestazione e pie pagina con numero al centro
 
-  
+
   % inizio numerazione pagine in numeri arabi
   \mainmatter
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Nota
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Si ricorda che il numero massimo di facciate e' 30.
-%% Nel conteggio delle facciate sono incluse 
-%%   indice
-%%   sommario
-%%   capitoli
-%% Dal conteggio delle facciate sono escluse
-%%   frontespizio
-%%   ringraziamenti
-%%   allegati    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % indice
     \tableofcontents
     \clearpage
     
     
-          
     % gruppo per definizone di successione capitoli senza interruzione di pagina
     \begingroup
       % nessuna interruzione di pagina tra capitoli
@@ -98,32 +58,15 @@
       \titlespacing*{\subsection}{0pt}{0.10in}{0.02in}
       
       % sommario
-      \input{sommario}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Nota
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Sommario e' un breve riassunto del lavoro svolto dove si descrive 
-%% l’obiettivo, l’oggetto della tesi, le metodologie e 
-%% le tecniche usate, i dati elaborati e la spiegazione delle conclusioni 
-%% alle quali siete arrivati.
-%% Il sommario dell’elaborato consiste al massimo di 3 pagine e deve contenere le seguenti informazioni: 
-%%   contesto e motivazioni
-%%   breve riassunto del problema affrontato
-%%   tecniche utilizzate e/o sviluppate
-%%   risultati raggiunti, sottolineando il contributo personale del laureando/a
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
-      
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \input{parti/sommario}
+     
       % lista dei capitoli
       %
       % \input oppure \include
       %
-      \input{capitolo1}
-      \input{capitolo2}
-      \input{capitolo3}
-      %\input{capitolo4}
+      \input{capitoli/capitolo1}
+      \input{capitoli/capitolo2}
+      \input{capitoli/capitolo3}
       
       
     \endgroup
@@ -135,7 +78,7 @@
     \addcontentsline{toc}{chapter}{Bibliografia}
     % stile con ordinamento alfabetico in funzione degli autori
     \bibliographystyle{plain}
-    \bibliography{biblio}
+    \bibliography{parti/biblio}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Nota
@@ -167,8 +110,7 @@
 
     \titleformat{\chapter}
         {\normalfont\Huge\bfseries}{Allegato \thechapter}{1em}{}
-    % sezione Allegati - opzionale
     \appendix
-    \input{allegati}
+    \input{parti/allegati}
 
 \end{document}

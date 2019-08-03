@@ -1,0 +1,45 @@
+\chapter*{Sommario} % senza numerazione
+\label{sommario}
+
+\addcontentsline{toc}{chapter}{Sommario} % da aggiungere comunque all'indice
+
+L'oggetto di questa tesi è lo sviluppo di un sistema di cattura e registrazione video e audio di lezioni universitarie, conferenze e seminari. Il sistema prodotto si basa su un dispositivo fisico dotato di apposito hardware per la cattura video, sul quale viene eseguito un apposito software su sistema operativo Android.
+
+Il sistema è stato realizzato nell'ambito del progetto LODE \footnote{Lectures On DEmand} del professor Marco Ronchetti (Università di Trento), ed è stato elaborato durante un tirocinio formativo presso l'azienda AXIA Studio S.r.l., con l'obiettivo finale di affinare la soluzione e di immetterla sul mercato delle soluzioni IoT accademiche.
+
+Il progetto LODE, nel cui contesto questo lavoro si inserisce, è un progetto sperimentale realizzato in diverse iterazioni presso l'Università di Trento, con l'obiettivo di fornire una soluzione low cost per l'acquisizione video delle lezioni universitarie. Le ultime versioni del sistema prevedono la possibilità di registrare flussi multimediali multipli, in particolare il video in uscita dal computer del docente, il video acquisito da una videocamera che riprende il docente e/o la lavagna, e l'audio di un microfono indossato dal docente.
+
+L'obiettivo principale del sistema è di essere economico e sufficiente semplice da poter essere comandato direttamente da un professore. Al termine della lezione, un processo di post-elaborazione automatizzabile si occupa di unire i flussi video e audio e di sincronizzarli, per ottenere i contenuti finali da pubblicare in una pagina web accessibile dagli studenti iscritti al corso.
+
+Una funzionalità del sistema prevede anche che lo studente possa catturare durante le lezioni degli screenshot di ciò che viene proiettato in quel momento, con la possibilità di scrivere annotazioni testuali o di disegnare sulle catture.
+
+Nella sua ultima iterazione, il sistema LODE prevede l'uso di un dispositivo fisico, soprannominato LodeBox, che incorpora un single-board computer (computer su una scheda) Raspberry Pi. Tramite apposite estensioni hardware, in particolare un modulo “HDMI to CSI-2”, il dispositivo è in grado di acquisire un input HDMI come se si trattasse del video di una videocamera, e di sfruttare funzionalità come l'anteprima su schermo e la registrazione H.264 tramite encoder hardware Toshiba.
+
+Questa soluzione si scontra però con delle difficoltà tecniche, che rendono difficile la realizzazione di un sistema affidabile e pronto per il pubblico. Tra le problematiche si evidenziano: la mancanza di storage integrato e duraturo ad alte prestazioni; la scarsa qualità del Wi-Fi; la difficoltà nel gestire situazioni “plug and play” come la disconnessione e la riconnessione del cavo HDMI, che richiederebbero di riavviare il dispositivo forzatamente; la difficoltà nel cambiare il branding software del dispositivo in modo che non sia evidente la presenza del sistema operativo Linux Raspbian.
+
+La verifica degli aspetti appena citati è stata la prima attività da me svolta, e ha portato ad alcuni miglioramenti, tra cui la notevole riduzione dello spazio di archiviazione richiesto per i file video.
+
+Ci si è spostati in seguito alla ricerca di SBC (single-board computer) alternative e più adattate per la realizzazione di applicazioni multimediali. La maggior parte delle SBC con funzioni multimediali è basata su sistema operativo Android, e in alcuni casi sono forniti SDK dedicati per sfruttare funzioni specifiche del dispositivo.
+
+Gran parte del lavoro si è concentrato sullo sviluppo di un'applicazione Android da eseguire su una board Android. Durante il lavoro l'applicazione è stata anche sperimentata sul campo durante alcune lezioni presso l'Universitaria di Trento, permettendo di raccogliere importanti riscontri sul funzionamento del sistema.
+
+Le attività e le problematiche che sono state affrontate sono numerose, e le principali sono approfondite in questa tesi. A grandi linee, le attività sono state:
+
+
+\begin{itemize}
+  \item scelta delle API di Android Camera o Camera2, per l'accesso all'input HDMI del dispositivo;
+  \item implementazione della registrazione di un flusso video RTSP, per poter acquisire una videocamera connessa in rete;
+  \item implementazione della registrazione del video HDMI in ingresso;
+  \item aggiunta della cattura di fotogrammi durante la registrazione della lezione;
+  \item	integrazione dell'applicazione con il web server che permette agli studenti di catturare screenshot;
+  \item	rilevamento della disconnessione e riconnessione dell'input HDMI, e del cambio risoluzione;
+  \item	realizzazione di una “kiosk mode”, in modo da impedire all'utilizzatore di uscire dall'applicazione o di compromettere il sistema o il dispositivo;
+  \item	realizzazione di uno script per ritagliare segmenti dei video registrati, per ottenere la funzionalità di pausa/ripresa della registrazione;
+  \item	sincronizzazione dei flussi video HDMI e RTSP, in particolare mediante l'uso di un marcatore visivo presente in entrambi i flussi;
+  \item	rilevamento ed estrazione delle “slide” dal video HDMI in post-produzione;
+  \item	rilevamento dei cambiamenti al flusso video HDMI, in modo da evitare di inviare al server screenshot che sono già stati inviati;
+  \item	registrazione di audio LPCM e compressione AAC.
+\end{itemize}
+
+L'approfondimento di questi punti ha permesso di individuare pregi e difetti di diversi dispositivi hardware, e di individuare quindi quello più valido per la realizzazione e messa in produzione della soluzione. Il codice prodotto durante il lavoro di tirocinio e tesi potrà essere usato come riferimento per l'integrazione dei vari componenti nel software finale.
+
