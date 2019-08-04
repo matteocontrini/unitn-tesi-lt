@@ -1,18 +1,37 @@
 \chapter{Introduzione}
 \label{cha:intro}
 
-Questo capitolo introduce il sistema LODE sviluppato presso l'Università di Trento, ne approfondisce motivazioni e vantaggi, fino ad arrivare ad introdurre l'ultima iterazione del sistema come dispositivo hardware dal nome LodeBox. Vengono infine introdotte le principali problematiche legate a LodeBox e l'hardware alternativo considerato per lo sviluppo del progetto.
+Questo capitolo introduce il sistema LODE sviluppato presso l'Università di Trento, nel cui contesto questa tesi si inserisce. Sono approfonditi motivazioni e vantaggi, ed è introdotta l'ultima iterazione del sistema, cioè un dispositivo hardware dal nome LodeBox. Sono infine presentate le principali problematiche legate a LodeBox e l'hardware alternativo considerato per l'evoluzione del progetto.
 
-
-\section{LODE: cos'è e perché adottarlo}
+\section{LODE: introduzione e motivazioni}
 \label{sec:intro_lode}
 
-Lorem ipsum dolor sit amet.
+LODE (Lectures On DEmand) è un progetto realizzato dal professor Marco Ronchetti e collaboratori presso l'Università di Trento. Si presenta come una soluzione per l'acquisizione in formato video e audio di lezioni universitarie, con la particolarità di essere una soluzione a basso costo.\cite{ronchetti}
+
+Le lezioni registrate possono essere consultate tramite una pagina web appositamente generata, che consente di vedere il video del computer del docente, il video ripreso da una videocamera posizionata in aula che riprende il professore e di ascoltare l'audio catturato dal microfono indossato dal docente.
+
+Gli orizzonti che questo sistema apre sono molteplici, tra cui: la possibilità per gli studenti-lavoratori di seguire le lezioni in remoto a qualsiasi orario; la possibilità di recuperare le lezioni in caso di assenze non volontarie (es. malattia); supporto per gli studenti che non comprendono bene la lingua del corso; la possibilità di rivedere porzioni specifiche di qualsiasi lezione in qualsiasi momento, e di verificare quindi la qualità dei propri appunti e il livello di comprensione.
+
+Le versioni più recenti di LODE prevedono anche un'interfaccia web utilizzabile dagli studenti durante lo svolgimento della lezione. Questo strumento permette di catturare degli screenshot di quanto proiettato dal docente in quell'istante, e di scrivere o disegnare annotazioni sulle catture. In questo modo gli studenti sono coinvolti in modo meno passivo e seguono la lezione con più attenzione.
 
 \section{La soluzione LodeBox}
 \label{sec:intro_lodebox}
 
-Lorem ipsum dolor sit amet.
+\begin{wrapfigure}{R}{0.3\textwidth}
+	\vspace{-12pt}
+	\includegraphics[width=0.3\textwidth]{res/lodebox}
+	\caption{\label{fig:lodebox} La scatola di LodeBox}
+\end{wrapfigure}
+
+L'ultima versione di LODE prevede l'utilizzo di un mini-computer Raspberry Pi per eseguire il software di acquisizione. Il dispositivo è inserito in una piccola scatola che espone dei connettori verso l'esterno. Tra questi sono presenti un ingresso HDMI per collegare un computer e un'uscita HDMI per collegare un proiettore o uno schermo. Le porte USB permettono di collegare un telecomando e un "dongle" per l'acquisizione dell'audio di un microfono con jack 3,5 mm.
+
+La scatola include un modulo "HDMI to MIPI CSI-2", che permette di convertire il segnale HDMI nel formato seriale della fotocamera. Il video HDMI è infatti acquisito utilizzando la libreria \texttt{PiCamera} per Python, che permette di acquisire il segnale come se si trattasse del video di una fotocamera. La libreria semplifica di molto lo sviluppo, perché espone delle funzioni di alto livello per abilitare l'anteprima del video a schermo intero, la registrazione con un encoder H.264\footnotemark{} con accelerazione hardware e la cattura di screenshot.
+
+\footnotetext{H.264, conosciuto anche come AVC o MPEG-4 Part-10, è il più popolare codec di compressione video. Nato nel 2003, è ancora oggi lo standard de facto in numerosi ambiti, tra cui lo streaming video.}
+
+Sempre in ottica di riduzione dei costi, LodeBox prevede la ripresa del docente tramite una qualsiasi videocamera IP (wireless o cablata) che supporti il protocollo RTSP (Real Time Streaming Protocol). La registrazione avviene sul dispositivo utilizzando \texttt{ffmpeg}/\texttt{avconv}\footnotemark{} in modalità copia (senza codifica), richiedendo quindi un uso molto basso di risorse.
+
+\footnotetext{\emph{ffmpeg} è uno strumento estremamente popolare per l'elaborazione di video e audio tramite linea di comando. Supporta numerosi formati, codec e protocolli, e permette di effettuare operazioni quali il muxing, transmuxing, transcoding e altre funzioni più avanzate. \emph{avconv} è un fork di ffmpeg nato per via di divergenze sui metodi di sviluppo, ed è stato incluso per un breve periodo in alcune distribuzioni Linux in sostituzione di ffmpeg.}
 
 \section{Hardware alternativo}
 \label{sec:intro_hardware}
