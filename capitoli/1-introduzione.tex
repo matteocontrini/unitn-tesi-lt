@@ -20,7 +20,7 @@ Le versioni più recenti di LODE prevedono anche un'interfaccia web utilizzabile
 \begin{wrapfigure}{R}{0.3\textwidth}
 	\vspace{-12pt}
 	\includegraphics[width=0.3\textwidth]{res/lodebox}
-	\caption{\label{fig:lodebox} La scatola di LodeBox}
+	\caption{\label{fig:lodebox} La scatola di LodeBox.}
 \end{wrapfigure}
 
 L'ultima versione di LODE prevede l'utilizzo di un mini-computer Raspberry Pi per eseguire il software di acquisizione. Il dispositivo è inserito in una piccola scatola che espone dei connettori verso l'esterno. Tra questi sono presenti un ingresso HDMI per collegare un computer e un'uscita HDMI per collegare un proiettore o uno schermo. Le porte USB permettono di collegare un telecomando e un "dongle" per l'acquisizione dell'audio di un microfono con jack 3,5 mm.
@@ -33,8 +33,14 @@ Sempre in ottica di riduzione dei costi, LodeBox prevede la ripresa del docente 
 
 \footnotetext{\emph{ffmpeg} è uno strumento estremamente popolare per l'elaborazione di video e audio tramite linea di comando. Supporta numerosi formati, codec e protocolli, e permette di effettuare operazioni quali il muxing, transmuxing, transcoding e altre funzioni più avanzate. \emph{avconv} è un fork di ffmpeg nato per via di divergenze sui metodi di sviluppo, ed è stato incluso per un breve periodo in alcune distribuzioni Linux in sostituzione di ffmpeg.}
 
+Raspberry Pi non prevede spazio di archiviazione interno, e richiede quindi di utilizzare una scheda microSD per memorizzare le registrazioni. Le memorie di tipo flash hanno però vita limitata, a seconda di quanto intensivamente sono utilizzate, e questo riduce di conseguenza l'affidabilità a lungo termine del sistema.
+
+Un altro svantaggio di questa soluzione è il livello di "fault tolerance" in caso di eventi come la disconnessione (volontaria o meno) del cavo HDMI in ingresso. Dato che l'input HDMI è mappato sull'interfaccia della fotocamera, non è previsto che la fotocamera possa essere improvvisamente scollegata. Secondo le prove effettuate, non risulta possibile rilevare in modo affidabile la disconnessione del cavo HDMI. Nei casi in cui è possibile, non risulta invece fattibile il recupero dell'applicazione, perché le operazioni sulla \texttt{PiCamera} sollevano eccezioni o bloccano indefinitamente l'esecuzione del codice.
+
 \section{Hardware alternativo}
 \label{sec:intro_hardware}
 
-Lorem ipsum dolor sit amet.
+Per poter evolvere LodeBox in una soluzione più affidabile e adatta alla produzione e distribuzione, si sono quindi cercate SBC (Single-Board Computer) alternative, preferibilmente pensate per la realizzazione di applicazioni multimediali. I principali vincoli per la scelta di una nuova scheda erano la presenza dell'input HDMI, la possibilità di collegare un microfono, e il costo accessibile.
+
+Molte board con sistema operativo Android soddisfano i requisiti, e consentono allo stesso tempo di avere a disposizione una piattaforma di facile sviluppo. In molti casi l'input HDMI è reso disponibile tramite l'interfaccia MIPI CSI, permettendo di conseguenza di acquisire l'input tramite le API di Android per l'accesso alla fotocamera.
 
