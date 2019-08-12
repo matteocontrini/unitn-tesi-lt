@@ -1,17 +1,43 @@
 \chapter{Acquisizione video HDMI}
 \label{cha:hdmi}
-Lorem ipsum dolor sit amet.
 
-%Esiste infatti una modalità \texttt{LEGACY} che dà la possibilità di usare le API \texttt{camera2} nonostante l'assenza di un supporto diretto a basso livello per le API.
+Nelle sezioni che seguono vengono introdotti i principali metodi tipicamente disponibili su board Android per l'accesso all'ingresso HDMI. Si tratta in particolare delle due API per l'accesso alla fotocamera, a cui ci si riferisce spesso come "Camera1" e "Camera2".
 
 
 \section{Le API \texttt{android.hardware.Camera}}
-\label{sec:hdmi_camera}
-Lorem ipsum dolor sit amet.
+\label{sec:hdmi_camera1}
+
+La classe \texttt{Camera} è stata introdotta nella prima versione di Android ed è il metodo più semplice per accedere alla fotocamera. Va notato però che la classe è stata messa in stato di deprecazione a partire da Android 5.0 (livello API 21), e Google consiglia di utilizzare invece le API \texttt{Camera2} per realizzare nuove applicazioni.\footnotemark{} Tuttavia, non tutti i dispositivi con Android 5.0 o superiore supportano nativamente le API \texttt{Camera2}. Esiste infatti una modalità \texttt{LEGACY} che dà la possibilità di usare le API \texttt{Camera2} nonostante l'implementazione sia in realtà la stessa delle API Camera1.
+
+\footnotetext{https://developer.android.com/reference/android/hardware/Camera}
+
+Entrando nel merito, per mostrare il video acquisito sullo schermo è prima di tutto necessario aggiungere un nuovo controllo/vista nella \texttt{Activity}\footnote{Una \texttt{Activity} rappresenta una pagina dell'applicazione.} dell'applicazione Android. Si utilizza per questo un elemento chiamato \texttt{SurfaceView}, che permette di disegnare contenuti su schermo in modo ottimizzato, fluido e senza consumare le risorse del thread della grafica. Quando una \texttt{SurfaceView} diventa visibile su schermo, una callback informa del fatto che la sottostante \texttt{Surface} è stata creata. È possibile a questo punto accedere, tramite il metodo d'istanza \texttt{getHolder()}, a un'implementazione dell'interfaccia \texttt{SurfaceHolder}, che permette di configurare e controllare la superficie di disegno.
+
+Ottenuto il \texttt{SurfaceHolder}, si può procedere con la creazione di un'istanza di \texttt{Camera} tramite il metodo statico \texttt{Camera.open()}. Si collega quindi la superficie alla \texttt{Camera} tramite il metodo \texttt{setPreviewDisplay(SurfaceHolder)}. Infine, una chiamata a \texttt{startPreview()} permette di avviare l'anteprima su schermo.
+
+A questo punto, creando un'istanza della classe \texttt{android.media.MediaRecorder} è possibile registrare il video acquisito, mostrando allo stesso tempo l'anteprima su schermo. Più in dettaglio, si tratta di seguire una rigida sequenza di passaggi\footnotemark{} per configurare correttamente il \texttt{MediaRecorder}, e di collegare l'input \texttt{Camera} al registratore tramite il metodo \texttt{setCamera(Camera)}. La registrazione può infine essere avviata con il metodo \texttt{start()}.
+
+\footnotetext{https://developer.android.com/guide/topics/media/camera\#capture-video}
+
+La cattura di un singolo screenshot si può invece ottenere tramite il metodo \texttt{takePicture(...)}, esposto dalla classe \texttt{Camera}. Questo metodo permette di ricevere tramite delle callback i dati del fotogramma catturato, sia in formato non compresso che in JPEG.
+
+Questo metodo presenta però un possibile effetto collaterale, riscontrato durante i test, ossia la possibilità che alla cattura di un fotogramma l'anteprima del video su schermo venga interrotta. Durante lo sviluppo si è quindi optato per una modalità alternativa per l'acquisizione degli screenshot: è possibile infatti aggiungere una callback alla \texttt{Camera} tramite il metodo \texttt{setPreviewCallback}, e ricevere così a flusso continuo una copia di ogni fotogramma in formato non compresso\footnote{Si tratta in realtà del formato NV21, cioè una variante di Android di YCbCr 4:2:0, che è una codifica del colore lossy anche se con una perdita di dettaglio solitamente impercettibile.}.
+
+Sorge a questo punto un altro problema, cioè la necessità di convertire l'immagine in un file JPEG, per permettere l'upload dello screenshot sul server. La piattaforma Android offre una classe \texttt{YuvImage} con un metodo \texttt{compressToJpeg(...)}, che soffre però di un memory leak che porta dopo qualche minuto al crash dell'applicazione\footnote{https://codar.club/blogs/android-system-api-yuvimage-compresstojpeg-has-a-memory-leak-at-the-native-level.html}, come verificato nei test svolti. Il bug è stato risolto solo in Android 9.0\footnote{Il commit del fix è disponibile qua: https://android.googlesource.com/platform/frameworks/base/+/1c3ded3}, rendendo quindi necessaria un'alternativa. Si è optato per una soluzione che prevede la conversione in modo ottimizzato dal formato "non compresso" (NV21) a \texttt{Bitmap}, e successivamente in JPEG tramite il metodo \texttt{compress(...)} offerto da \texttt{Bitmap} (che non soffre di memory leak). Nonostante il numero di passaggi, il risultato si è rivelato molto soddisfacente dal punto di vista delle prestazioni.
 
 
 \section{Le API \texttt{android.hardware.camera2.*}}
 \label{sec:hdmi_camera2}
-Lorem ipsum dolor sit amet.\cite{camera2}
 
+A partire da Android 5.0, un nuovo insieme di classi permette una gestione più avanzata dell'accesso all'hardware della fotocamera. L'equivalente della classe \texttt{Camera} è \texttt{CameraDevice}, che però non espone più i metodi visti nella sezione precedente.
+
+Viene introdotto invece il concetto di pipeline, cioè flussi paralleli forniti dal sistema operativo per diversi scopi. Ad esempio, la pipeline di "preview" fornisce un flusso con latenza molto bassa ma trascurando leggermente la qualità dell'immagine. La pipeline per le foto fornisce un'immagine ad alta qualità, mentre la pipeline per la registrazione video offre qualità dell'immagine e scansione costante dei fotogrammi in uscita.\footnote{\emph{Build a universal camera app (Google I/O '18)} https://youtu.be/d1gLZCSLmaA}
+
+Ottenuto il \texttt{CameraDevice}, la prima operazione da eseguire è creare una sessione di cattura, alla quale vanno collegati i \emph{target} di acquisizione (metodo \texttt{createCaptureSession(...)}). Android utilizza questi target per configurare le pipeline interne e allocare i buffer necessari per la produzione dei fotogrammi.\cite{camera2} I target possono essere \texttt{SurfaceView}, oppure istanze di \texttt{ImageReader}, che ricevono i fotogrammi singoli. Una volta creata, una sessione non può più essere modificata, e se c'è la necessità di modificare i target bisogna ricreare la sessione.
+
+Una volta creata la \texttt{CameraCaptureSession}, il metodo \texttt{createCaptureRequest(int)} permette di inviare una richiesta di cattura alla fotocamera. Questo meccanismo permette di catturare in qualsiasi istante un fotogramma con caratteristiche diverse a seconda della pipeline scelta come parametro (per esempio \texttt{TEMPLATE\_PREVIEW}, \texttt{TEMPLATE\_STILL\_CAPTURE}, \texttt{TEMPLATE\_RECORD}, ecc.).
+
+Per mostrare l'anteprima su schermo si può utilizzare il metodo \texttt{setRepeatingRequest(...)}, che si occupa di inviare richieste di cattura il più frequentemente possibile, e ottenere quindi l'anteprima del video in tempo reale.
+
+Quando si vuole iniziare la registrazione del video, è necessario interrompere la cattura di sessione e crearne una nuova, aggiungendo tra i \emph{target} una \texttt{Surface} legata a un'istanza di \texttt{MediaRecorder} (il metodo \texttt{getSurface()} permette di ottenere l'oggetto). In questo modo la richiesta di cattura invierà i fotogrammi a un \texttt{MediaRecorder}, che si occuperà di passarli all'encoder e di scriverli su file.
 
