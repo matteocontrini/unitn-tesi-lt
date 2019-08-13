@@ -15,16 +15,24 @@ Il trasferimento vero e proprio dei dati multimediali avviene invece tramite RTP
 
 Un flusso video RTSP può essere facilmente registrato tramite lo strumento \texttt{ffmpeg}, un progetto open source che incorpora il supporto a numerosi protocolli, formati e codec per l'elaborazione del video e dell'audio. Il video acquisito può essere salvato anche in modalità copia, e cioè salvando il \emph{bitstream} ricevuto (es. formato H.264) senza nessuna elaborazione. Questo permette di evitare la ricodifica del video e di risparmiare risorse hardware.
 
-Può essere inoltre scelto un qualsiasi formato contenitore (es. MP4) compatibile con il codec del video. L'operazione di inserire un \texttt{bitstream} in un contenitore si chiama \emph{muxing}, ed è molto leggera a livello di CPU. Una scelta conveniente per il contenitore è MPEG-2 Transport Stream, un formato pensato per sistemi di distribuzione che soffrono di perdita di dati (es. il digitale terrestre) tollerante a interruzioni forzate della registrazione, come la mancanza di corrente.
+Può essere inoltre scelto un qualsiasi formato contenitore (es. MP4) compatibile con il codec del video. L'operazione di inserire un \emph{bitstream} in un contenitore si chiama \emph{muxing}, ed è molto leggera a livello di CPU. Una scelta conveniente per il contenitore può essere MPEG-2 Transport Stream, un formato pensato per sistemi di distribuzione che soffrono di perdita di dati (es. la televisione digitale terrestre) e tollerante a interruzioni forzate del muxing, come nel caso di mancanza di corrente.
 
-Il comando seguente acquisisce il video da una videocamera Foscam e lo salva in un file \texttt{out.ts}, scartando l'audio:
+Il comando seguente acquisisce il video da una videocamera Foscam e lo salva in un file \texttt{out.ts}:
 
-\begin{lstlisting}[language=bash]
-ffmpeg -i rtsp://admin:admin@192.168.178.30:88/videoMain \
-       -c:v copy -an /sdcard/out.ts -y
-\end{lstlisting}
+\begin{minted}{bash}
+ffmpeg -i rtsp://admin:admin@192.168.178.30:88/videoMain
+       -c:v copy -an out.ts -y
+\end{minted}
 
-In una applicazione Android, è possibile utilizzare dei wrapper appositamente realizzati per sfruttare \texttt{ffmpeg} sulle architetture tipiche di Android (tra cui ARM). Tra questi, la libreria open source \texttt{MobileFFmpeg}\footnote{https://github.com/tanersener/mobile-ffmpeg} è stata presa in considerazione e adottata per le sperimentazioni, anche per via dell'ottimo stato di mantenimento e aggiornamento del progetto.
+In alternativa a MPEG-2 TS si può scegliere anche MPEG-2 PS (Program Stream), che ha un overhead di muxing inferiore per via dell'assenza di controllo degli errori a livello di contenitore:
 
-\texttt{MobileFFmpeg} è fornita in diverse varianti, a seconda delle versioni di Android che si desidera supportare e dei moduli di \texttt{ffmpeg} di cui si necessita. Per fare un esempio, il pacchetto identificato come \texttt{com.arthenica:mobile-ffmpeg-min:4.2.LTS} è una versione base ("min") che non include il supporto a nessuna libreria esterna (nessun encoder/decoder), ma che comprende comunque il supporto a RTSP e al muxing. \texttt{LTS} sta a indicare che la versione minima di Android supportata è 4.1, a differenza della versione non LTS che richiede Android 7.0 o superiore.
+% tex here below is a workaround because bash doesn't allow highlighting easily: https://github.com/gpoore/minted/issues/70
+\begin{minted}[escapeinside=||]{tex}
+ffmpeg -i rtsp://admin:admin@192.168.178.30:88/videoMain
+       -c:v copy -an |\colorbox{LightCyan}{-f vob out.mpg}| -y
+\end{minted}
+
+In una applicazione Android, è possibile utilizzare dei wrapper appositamente realizzati per sfruttare \texttt{ffmpeg} sulle architetture tipiche di Android (tra cui ARM). Per le sperimentazioni è stata presa in considerazione la libreria open source \texttt{MobileFFmpeg}\footnote{https://github.com/tanersener/mobile-ffmpeg}, anche per via dell'ottimo stato di mantenimento e aggiornamento del progetto.
+
+\texttt{MobileFFmpeg} è fornita in diverse varianti, a seconda delle versioni di Android che si desidera supportare e dei moduli di \texttt{ffmpeg} di cui si necessita. Per fare un esempio, il pacchetto identificato come \texttt{com.arthenica:mobile-ffmpeg-min:4.2.LTS} è una versione base (\texttt{min}) che non include il supporto a nessuna libreria esterna (nessun encoder/decoder), ma che comprende comunque il supporto a RTSP e al muxing. \texttt{LTS} sta a indicare che la versione minima di Android supportata è 4.1, a differenza della versione non LTS che richiede Android 7.0 o superiore.
 

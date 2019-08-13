@@ -1,13 +1,77 @@
 \chapter{Realizzazione della modalità "kiosk"}
 \label{cha:kiosk}
-Lorem ipsum dolor sit amet.
+
+Nell'ambito dei sistemi \emph{embedded} si utilizza spesso la locuzione \emph{modalità kiosk} per indicare tutte le situazioni in cui il sistema deve comportarsi come un "chiosco digitale" e limitare l'utilizzo a specifiche funzioni. Su Android si possono adottare diverse tecniche per ottenere una modalità simile, nascondendo quindi la presenza del sistema operativo Android. In questo capitolo sono presentate le tecniche sperimentate, tra cui la modalità a schermo intero, la modifica dell'\emph{overscan} di sistema, la modalità \emph{lock task} e la modifica dell'animazione di avvio del sistema.
 
 \section{Il tema a schermo intero}
 \label{sec:kiosk_fullscreen}
 
-Lorem ipsum dolor sit amet.
+A seconda della versione di Android che si ha a disposizione, sono disponibili strade diverse per abilitare la modalità a schermo intero, che ha l'effetto di nascondere sia la barra di navigazione presente nella parte bassa dello schermo, sia la barra di stato presente in alto.
 
-\section{L'overscan di sistema}
+Su Android 4.0 o inferiore, è possibile scegliere una variante \texttt{Fullscreen} del tema dell'applicazione modificando il file \texttt{AndroidManifest.xml}\footnotemark. Ad esempio:
+
+\begin{minted}{xml}
+<application android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen">
+   <!-- ... -->
+</application>
+\end{minted}
+
+\footnotetext{https://developer.android.com/training/system-ui/status.html}
+
+Nel caso si stia usando un tema personalizzato, si può in modo equivalente abilitare l'opzione \texttt{windowFullscreen}\footnotemark:
+
+\begin{minted}[highlightlines={2}]{xml}
+<style name="CustomTheme">
+    <item name="windowFullscreen">true</item>
+</style>
+\end{minted}
+
+\footnotetext{https://android.googlesource.com/platform/frameworks/base/+/b7866d1/core/res/res/values/themes\_holo.xml\#820}
+
+Lo stesso risultato si può ottenere anche via codice configurando dei \emph{flag} sulla finestra dell'applicazione. Il metodo seguente va chiamato all'interno di \texttt{onResume()} nella \texttt{Activity} Android da mostrare a schermo intero:
+
+\begin{minted}{java}
+private void goFullScreen() {
+    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                         WindowManager.LayoutParams.FLAG_FULLSCREEN);
+}
+\end{minted}
+
+A partire da Android 4.1 la gestione della modalità a schermo intero diventa più granulare e introduce la modalità "immersiva", che nasconde le barre di navigazione finché l'utente non scorre il dito/puntatore dai lati dello schermo. Google consiglia di utilizzare anche altri flag per prevenire effetti indesiderati\footnotemark, come mostrato in seguito:
+
+\begin{minted}{java}
+private void goFullScreenImmersive() {
+    getWindow().getDecorView().setSystemUiVisibility(
+        // Modalità immersiva "sticky"
+        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        // Evita lo spostamento del layout dell'app
+        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        // Nasconde barra di navigazione e di stato
+        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+        | View.SYSTEM_UI_FLAG_FULLSCREEN);
+}
+\end{minted}
+
+\footnotetext{https://developer.android.com/training/system-ui/immersive}
+
+Il metodo \texttt{goFullScreenImmersive()} va chiamato in \texttt{onResume()} ma anche nei casi in cui la modalità a schermo intero potrebbe essere automaticamente disabilitata, cioè quando cambia il "focus" dell'applicazione:
+
+\begin{minted}[highlightlines=5]{java}
+@Override
+public void onWindowFocusChanged(boolean hasFocus) {
+    super.onWindowFocusChanged(hasFocus);
+    if (hasFocus) {
+        goFullScreenImmersive();
+    }
+}
+\end{minted}
+
+Va notato a questo punto che i due diversi metodi per abilitare la modalità a schermo intero non si escludono a vicenda. Alcuni dispositivi con un'interfaccia particolarmente personalizzata potrebbero non reagire del tutto ai flag della modalità immersiva (metodo \texttt{goFullScreenImmersive()}), richiedendo invece di applicare i flag di \texttt{goFullScreen()}. Questo esatto comportamento è stato infatti verificato su una board con Android 6.0.
+
+
+\section{L'\emph{overscan} di sistema}
 \label{sec:kiosk_overscan}
 
 The Android WindowManager is a system service, which is responsible for managing the z-ordered list of windows, which windows are visible, and how they are laid out on screen. Among other things, it automatically performs window transitions and animations when opening or closing an app or rotating the screen.
