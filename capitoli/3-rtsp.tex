@@ -1,12 +1,12 @@
 \chapter{Acquisizione video RTSP}
 \label{cha:rtsp}
 
-Come anticipato, il sistema prevede la possibilità di registrare con una videocamera ciò che avviene in aula, in modo da rendere più coinvolgente la fruizione delle lezioni. Per limitare i costi, la videocamera è di tipo IP (Internet Protocol), e permette lo streaming locale in tempo reale tramite il protocollo RTSP.
+Come anticipato, il sistema LODE prevede la possibilità di registrare con una videocamera ciò che avviene in aula, in modo da rendere più coinvolgente la fruizione delle lezioni. Per limitare i costi, la videocamera è di tipo IP (Internet Protocol), e permette lo streaming locale in tempo reale tramite il protocollo RTSP.
 
 \section{Il protocollo RTSP}
 \label{sec:rtsp_protocollo}
 
-RTSP (Real Time Streaming Protocol) è un protocollo di rete per il controllo di flussi multimediali. Si dice che è \emph{di controllo} perché non è usato per lo scambio di dati multimediali ma di messaggi con lo scopo di richiedere determinate operazioni al server. Per fare qualche esempio, è possibile ottenere informazioni sui flussi disponibili, riprodurre un flusso specifico o metterlo in pausa.\cite{rfc2326}
+RTSP (Real Time Streaming Protocol) è un protocollo di rete per il controllo di flussi multimediali. Si dice che è \emph{di controllo} perché non è usato per lo scambio di dati multimediali, ma di messaggi con lo scopo di richiedere determinate operazioni al server. Per fare qualche esempio, è possibile ottenere informazioni sui flussi disponibili, riprodurre un flusso specifico o metterlo in pausa.\cite{rfc2326}
 
 Il trasferimento vero e proprio dei dati multimediali avviene invece tramite RTP (Real-time Transport Protocol), un protocollo progettato per consentire il trasporto in tempo reale di contenuti video e audio. Le implementazioni di RTP sono tipicamente basate su UDP\footnote{User Datagram Protocol}, protocollo di livello trasporto non connesso e non affidabile particolarmente adatto per situazioni in cui la latenza è più importante dell'affidabilità, ma spesso offrono compatibilità anche con TCP\footnote{Transmission Control Protocol}.
 
@@ -17,19 +17,19 @@ Un flusso video RTSP può essere facilmente registrato tramite lo strumento \tex
 
 Può essere inoltre scelto un qualsiasi formato contenitore (es. MP4) compatibile con il codec del video. L'operazione di inserire un \emph{bitstream} in un contenitore si chiama \emph{muxing}, ed è molto leggera a livello di CPU. Una scelta conveniente per il contenitore può essere MPEG-2 Transport Stream, un formato pensato per sistemi di distribuzione che soffrono di perdita di dati (es. la televisione digitale terrestre) e tollerante a interruzioni forzate del muxing, come nel caso di mancanza di corrente.
 
-Il comando seguente acquisisce il video da una videocamera Foscam e lo salva in un file \texttt{out.ts}:
+Il comando seguente acquisisce il video da una videocamera IP e lo salva in un file \texttt{out.ts}:
 
 \begin{minted}{bash}
-ffmpeg -i rtsp://admin:admin@192.168.178.30:88/videoMain
-       -c:v copy -an out.ts -y
+> ffmpeg -i rtsp://admin:admin@192.168.178.30:88/videoMain
+         -c:v copy -an out.ts -y
 \end{minted}
 
 In alternativa a MPEG-2 TS si può scegliere anche MPEG-2 PS (Program Stream), che ha un overhead di muxing inferiore per via dell'assenza di controllo degli errori a livello di contenitore:
 
 % tex here below is a workaround because bash doesn't allow highlighting easily: https://github.com/gpoore/minted/issues/70
 \begin{minted}[escapeinside=||]{text}
-ffmpeg -i rtsp://admin:admin@192.168.178.30:88/videoMain
-       -c:v copy -an |\colorbox{LightCyan}{-f vob out.mpg}| -y
+> ffmpeg -i rtsp://admin:admin@192.168.178.30:88/videoMain
+         -c:v copy -an |\colorbox{LightCyan}{-f vob out.mpg}| -y
 \end{minted}
 
 In una applicazione Android, è possibile utilizzare dei wrapper appositamente realizzati per sfruttare \texttt{ffmpeg} sulle architetture tipiche di Android (tra cui ARM). Per le sperimentazioni è stata presa in considerazione la libreria open source \texttt{MobileFFmpeg}\footnote{https://github.com/tanersener/mobile-ffmpeg}, anche per via dell'ottimo stato di mantenimento e aggiornamento del progetto.

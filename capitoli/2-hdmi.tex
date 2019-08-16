@@ -11,7 +11,7 @@ La classe \texttt{Camera} è stata introdotta nella prima versione di Android ed
 
 \footnotetext{https://developer.android.com/reference/android/hardware/Camera}
 
-Entrando nel merito, per mostrare il video acquisito sullo schermo è prima di tutto necessario aggiungere un nuovo controllo/vista nella \texttt{Activity}\footnote{Una \texttt{Activity} rappresenta una pagina dell'applicazione.} dell'applicazione Android. Si utilizza per questo un elemento chiamato \texttt{SurfaceView}, che permette di disegnare contenuti su schermo in modo ottimizzato, fluido e senza consumare le risorse del thread della grafica. Quando una \texttt{SurfaceView} diventa visibile su schermo, una callback informa del fatto che la sottostante \texttt{Surface} è stata creata. È possibile a questo punto accedere, tramite il metodo d'istanza \texttt{getHolder()}, a un'implementazione dell'interfaccia \texttt{SurfaceHolder}, che permette di configurare e controllare la superficie di disegno.
+Entrando nel merito, per mostrare il video acquisito sullo schermo è prima di tutto necessario aggiungere un nuovo controllo nella \texttt{Activity}\footnote{Una \texttt{Activity} rappresenta una pagina dell'applicazione.} dell'applicazione Android. Si utilizza per questo un elemento chiamato \texttt{SurfaceView}, che permette di disegnare contenuti su schermo in modo ottimizzato, fluido e senza consumare le risorse del thread della grafica. Quando una \texttt{SurfaceView} diventa visibile su schermo, una callback informa del fatto che la sottostante \texttt{Surface} è stata creata. È possibile a questo punto accedere, tramite il metodo d'istanza \texttt{getHolder()}, a un'implementazione dell'interfaccia \texttt{SurfaceHolder}, che permette di configurare e controllare la superficie di disegno.
 
 Ottenuto il \texttt{SurfaceHolder}, si può procedere con la creazione di un'istanza di \texttt{Camera} tramite il metodo statico \texttt{Camera.open()}. Si collega quindi la superficie alla \texttt{Camera} tramite il metodo \texttt{setPreviewDisplay(SurfaceHolder)}. Infine, una chiamata a \texttt{startPreview()} permette di avviare l'anteprima su schermo.
 
@@ -27,7 +27,7 @@ Sorge a questo punto un altro problema, cioè la necessità di convertire l'imma
 
 Il seguente estratto di codice mostra la conversione da NV21 a JPEG. La variabile \texttt{context} è l'\texttt{Activity} dell'applicazione, mentre \texttt{data} contiene i dati dell'immagine sorgente. Alla riga 4 è possibile configurare la qualità dell'immagine JPEG prodotta (in questo caso 80 su 100).
 
-\begin{minted}{java}
+\begin{minted}[linenos]{java}
 RenderScript rs = RenderScript.create(context);
 Bitmap bitmap = Nv21Image.nv21ToBitmap(rs, data, width, height);
 ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -63,6 +63,8 @@ Inoltre, è spesso possibile sfruttare i \texttt{BroadcastReceiver} di Android p
 \begin{minted}{java}
 @Override
 public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+
     BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
