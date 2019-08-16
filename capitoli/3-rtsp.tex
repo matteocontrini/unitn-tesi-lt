@@ -27,7 +27,7 @@ ffmpeg -i rtsp://admin:admin@192.168.178.30:88/videoMain
 In alternativa a MPEG-2 TS si può scegliere anche MPEG-2 PS (Program Stream), che ha un overhead di muxing inferiore per via dell'assenza di controllo degli errori a livello di contenitore:
 
 % tex here below is a workaround because bash doesn't allow highlighting easily: https://github.com/gpoore/minted/issues/70
-\begin{minted}[escapeinside=||]{tex}
+\begin{minted}[escapeinside=||]{text}
 ffmpeg -i rtsp://admin:admin@192.168.178.30:88/videoMain
        -c:v copy -an |\colorbox{LightCyan}{-f vob out.mpg}| -y
 \end{minted}
