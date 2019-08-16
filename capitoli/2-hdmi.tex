@@ -27,7 +27,7 @@ Sorge a questo punto un altro problema, cioè la necessità di convertire l'imma
 
 Il seguente estratto di codice mostra la conversione da NV21 a JPEG. La variabile \texttt{context} è l'\texttt{Activity} dell'applicazione, mentre \texttt{data} contiene i dati dell'immagine sorgente. Alla riga 4 è possibile configurare la qualità dell'immagine JPEG prodotta (in questo caso 80 su 100).
 
-\begin{minted}[linenos]{java}
+\begin{minted}[xleftmargin=\parindent,linenos]{java}
 RenderScript rs = RenderScript.create(context);
 Bitmap bitmap = Nv21Image.nv21ToBitmap(rs, data, width, height);
 ByteArrayOutputStream stream = new ByteArrayOutputStream();
