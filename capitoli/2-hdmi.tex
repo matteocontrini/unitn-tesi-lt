@@ -57,6 +57,9 @@ Alcuni produttori forniscono degli SDK (Software Development Kit) specifici per 
 
 Inoltre, è spesso possibile sfruttare i \texttt{BroadcastReceiver} di Android per ricevere dal sistema eventi come la disconnessione e la riconnessione del cavo HDMI, e gestire quindi la sospensione e la ripresa dell'anteprima su schermo ed eventualmente della registrazione del video. Il seguente blocco di codice mostra come registrare un \texttt{BroadcastReceiver} per ricevere determinati eventi. Il \texttt{receiver} deve poi essere de-registrato alla sospensione dell'applicazione.
 
+% public static final String ACTION_HDMIRX_PLUGGED = "android.intent.action.HDMIRX_PLUGGED";
+% public static final String EXTRA_HDMIRX_PLUGGED_STATE = "state";
+
 \begin{minted}{java}
 @Override
 public void onCreate(Bundle savedInstanceState) {
@@ -64,12 +67,12 @@ public void onCreate(Bundle savedInstanceState) {
         @Override
         public void onReceive(Context context, Intent intent) {
             // Lettura stato di connessione. Varia in base all'hardware
-            boolean isConnected = intent.getBooleanExtra("Status", false);
+            boolean isConnected = intent.getBooleanExtra("state", false);
             // Gestire qua connessione/disconnessione
         }
     };
     
-    IntentFilter filter = new IntentFilter(HDMIRxStatus.ACTION_HDMIRX_PLUGGED);
+    IntentFilter filter = new IntentFilter("android.intent.action.HDMI_PLUGGED");
     super.registerReceiver(receiver, filter);
 }
 \end{minted}
