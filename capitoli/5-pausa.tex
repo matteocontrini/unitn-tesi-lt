@@ -1,4 +1,80 @@
 \chapter{Sospensione della registrazione}
 \label{cha:pausa}
-Lorem ipsum dolor sit amet.
+
+Durante l'acquisizione di una lezione potrebbero esserci dei momenti di pausa in cui la registrazione video e audio deve essere sospesa. La sospensione della registrazione può essere fatta sia durante lo svolgimento della lezione, ad esempio tramite un telecomando, oppure in seguito alla conclusione della lezione in una fase di post-elaborazione.
+
+Ricordando quanto mostrato nei capitoli \ref{cha:hdmi} e \ref{cha:rtsp}, prendiamo come riferimento la registrazione effettuata con la classe \texttt{MediaRecorder} di Android per l'ingresso HDMI e con \texttt{ffmpeg} per quanto riguarda la videocamera RTSP.
+
+A partire da Android 7.0, \texttt{MediaRecorder} espone i metodi \texttt{pause()} e \texttt{resume()} per mettere in pausa e riprendere la registrazione, comunque producendo un solo file video in uscita. Tuttavia, molte board multimediali non supportano Android 7.0. Si aggiunge inoltre il problema di sospendere anche la cattura \texttt{ffmpeg}.
+
+Una alternativa è quindi quella di interrompere la registrazione in corrispondenza della pausa, per poi avviarne una nuova per riprendere la registrazione. Per quanto riguarda il \texttt{MediaRecorder} questo si traduce nei metodi \texttt{stop()} e \texttt{start()}, mentre per \texttt{ffmpeg} nella chiusura del processo e l'avvio di uno nuovo.
+
+Alla fine si avranno diversi file corrispondenti agli spezzoni registrati, che possono essere rapidamente uniti ad esempio utilizzando \texttt{ffmpeg}. Nel caso in cui i video siano file MP4, l'unione dei file si può ottenere utilizzando il demuxer chiamato \texttt{concat}, che permette di simulare un input di \texttt{ffmpeg} come se si trattasse di un file unico concatenato.\cite{ffmpeg} Si deve innanzitutto creare un file \texttt{list.txt} contenente i percorsi ai segmenti da unire:
+
+\begin{minted}{bash}
+> cat list.txt
+file 'seg1.mp4'
+file 'seg2.mp4'
+file 'seg3.mp4'
+\end{minted}
+
+Quindi eseguire il seguente comando, dove \texttt{-f concat} indica il formato dell'input, in questo caso un input "virtuale" che è ottenuto dalla concatenazione dei file indicati in \texttt{list.txt}:
+
+\begin{minted}{bash}
+> ffmpeg -f concat -i list.txt -c copy merged.mp4
+\end{minted}
+
+Alcuni formati, tra cui \texttt{MPEG-2 TS}, sono progettati per permettere l'unione di più segmenti semplicemente concatenandoli a livello di file. In pratica, in ambiente Linux questo si traduce in:
+
+\begin{minted}{bash}
+> cat seg*.ts > merged.ts
+\end{minted}
+
+Equivalentemente, con \texttt{ffmpeg}:
+
+\begin{minted}{bash}
+> ffmpeg -i "concat:seg1.ts|seg2.ts|seg3.ts" -c copy merged.ts
+\end{minted}
+
+Un metodo alternativo per ottenere la funzionalità di pausa è quello di registrare la lezione intera e di occuparsi delle pause in una fase di post-elaborazione. Al termine della registrazione si otterrebbe quindi un file video unico, da cui verrebbero rimossi i segmenti indesiderati. Questo consente sia di avere una funzione di pausa/ripresa durante la lezione, sia di poter rimuovere a posteriori sezioni della lezione che non si vuole vengano pubblicati.
+
+La procedura di "ritaglio" del video si può ottenere con diversi strumenti, ma qui viene proposta una procedura che utilizza \texttt{ffmpeg}.
+
+Si supponga di avere un video di 30 secondi e che si voglia rimuovere la porzione di video dal secondo 10 al secondo 20. Questo è equivalente a dire che si vuole ottenere un video in cui vengono conservati i segmenti da 0 a 10 secondi e da 20 a 30 secondi del video originale.
+
+Il comando seguente sfrutta le catene di filtri di \texttt{ffmpeg} per ottenere il risultato appena detto (la traccia audio viene tralasciata per semplicità).
+
+\begin{minted}[xleftmargin=\parindent,linenos]{bash}
+> ffmpeg -i input.mp4 
+    -filter_complex \
+        "[0:v]trim=start=0:end=10,setpts=PTS-STARTPTS[0v]; \
+         [0:v]trim=start=20,setpts=PTS-STARTPTS[1v]; \
+         [0v][1v]concat=n=2:v=1:a=0[ov]" \
+    -map [ov] \
+    -preset veryfast -r 25 -g 250 -crf 25 -refs 1 \
+    -threads 0 out.mp4 -y
+\end{minted}
+
+Ciascuna catena di filtri, separata da un punto e virgola, prende in input una traccia, la elabora con una serie di filtri, e produce un output. Nello specifico, alla riga 3 viene presa come sorgente la traccia video del primo input (\texttt{[0:v]}), vengono applicati i filtri \texttt{trim} (per ritagliare una porzione del video) e \texttt{setpts} (per sistemare i timestamp\footnotemark{}), e infine il risultato viene etichettato come \texttt{[0v]}. La stessa sequenza di operazioni viene ripetuta una seconda volta per ritagliare il secondo segmento di video ed etichettarlo con \texttt{[1v]}.
+
+La catena successiva (riga 5) considera i due segmenti etichettati \texttt{[0v]} e \texttt{[1v]} e applica il filtro \texttt{concat}, che concatena i due segmenti specificando anche numero di tracce video e audio. La traccia video risultante viene quindi selezionata come traccia del file di output (riga 6), e seguono infine alcuni parametri di codifica per x264.\cite{ozer}
+
+\footnotetext{La sigla \texttt{PTS} sta per \emph{presentation timestamp} e indica l'istante temporale in cui un fotogramma deve essere mostrato. Il filtro \texttt{trim} non modifica il timestamp dei fotogrammi tagliati, per cui senza il filtro \texttt{setpts} l'output non sarebbe quello desiderato.}
+
+%\begin{minted}[xleftmargin=\parindent,linenos]{bash}
+%> ffmpeg -i input.mp4 
+%    -filter_complex \
+%        "[0:v]trim=start=0:end=10,setpts=PTS-STARTPTS[0v]; \
+%         [0:a]atrim=start=0:end=10,asetpts=PTS-STARTPTS[0a]; \
+%         [0:v]trim=start=20,setpts=PTS-STARTPTS[1v]; \
+%         [0:a]atrim=start=20,asetpts=PTS-STARTPTS[1a]; \
+%         [0v][0a][1v][1a]concat=n=2:v=1:a=1[ov][oa]" \
+%    -map [ov] -map [oa] \
+%    -preset veryfast -r 25 -g 250 -crf 25 -refs 1 \
+%    -threads 0 out.mp4 -y
+%\end{minted}
+
+Con l'aumentare del numero dei segmenti da ritagliare e con l'aggiunta di una traccia audio, il comando \texttt{ffmpeg} può diventare complesso da scrivere, leggere e comprendere. La composizione del comando è quindi automatizzabile con un semplice script scritto in qualsiasi linguaggio, che prenda in input gli intervalli da rimuovere e produca in output il testo del comando da eseguire.
+
+[script?]
 
