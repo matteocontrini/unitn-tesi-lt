@@ -9,12 +9,12 @@ Nelle sezioni che seguono viene presentato il problema della sincronizzazione de
 Come accennato, il problema sorge perché i tre flussi provengono da sorgenti e strumenti di acquisizione diversi. Si tratta in particolare di:
 
 \begin{itemize}
-	\item il video dell'ingresso HDMI, registrato con la classe \texttt{MediaRecorder} di Android o eventualmente con SDK dedicati. Nel primo caso si ha un metodo \texttt{start()} che si può prendere come istante approssimativo di inizio della registrazione, ma non è possibile ottenere l'istante preciso di inizio effettivo della registrazione (cioè quello del prima fotogramma);
-	\item il video della videocamera IP, registrato con \texttt{ffmpeg} tramite il protocollo RTSP. La latenza di inizio registrazione è difficilmente stimabile, in altre parole dopo l'avvio del comando \texttt{ffmpeg} non è possibile sapere con precisione l'istante a cui corrisponde il primo fotogramma acquisito. La latenza è infatti influenzata da diversi fattori, tra cui la rete, i tempi di codifica, i buffer di trasmissione e di ricezione. Non è quindi facile trovare un intervallo di tempo abbastanza preciso per sincronizzare il video con gli altri flussi;
+	\item il video dell'ingresso HDMI, registrato con la classe \texttt{MediaRecorder} di Android o eventualmente con SDK dedicati. Nel primo caso si ha un metodo \texttt{start()} che si può prendere come istante approssimativo di inizio della registrazione, ma non è possibile ottenere il \emph{timestamp} preciso di inizio effettivo della registrazione (cioè quello del primo fotogramma);
+	\item il video della videocamera IP, registrato con \texttt{ffmpeg} tramite il protocollo RTSP. La latenza di inizio registrazione è difficilmente stimabile, e cioè, in altre parole, dopo l'avvio del comando \texttt{ffmpeg} non è possibile sapere con precisione l'istante a cui corrisponde il primo fotogramma acquisito. La latenza è infatti influenzata da diversi fattori, tra cui la rete, i tempi di codifica, i buffer di trasmissione e di ricezione. Non è quindi facile trovare un intervallo di tempo abbastanza preciso per sincronizzare il video con gli altri flussi;
 	\item l'audio di un microfono, collegato via cavo direttamente alla board Android. Questo può essere registrato con la stessa istanza di \texttt{MediaRecorder} del primo punto, ottenendo quindi una sincronizzazione naturale, almeno a livello teorico.
 \end{itemize}
 
-A questo punto si ha quindi che le due sorgenti acquisite via cavo (HDMI e audio) sono tra loro sincronizzate, mentre resta il problema di associare il video RTSP alla traccia audio. Uno sfasamento di anche solo 200-300 millisecondi risulta infatti percepibile da un umano e può rendere fastidiosa la fruizione del video.
+A questo punto si ha che le due sorgenti acquisite via cavo (HDMI e audio) sono tra loro sincronizzate, mentre resta il problema di allineare il video RTSP con la traccia audio. Uno sfasamento di anche solo 200-300 millisecondi risulta infatti percepibile e può rendere fastidiosa la fruizione del video.
 
 \section{Proposta di soluzione}
 \label{sec:sync_soluzione}
@@ -102,7 +102,7 @@ Il primo passaggio per implementare la soluzione è predisporre la visualizzazio
              tools:context=".MainActivity">
 
     <View android:id="@+id/rect"
-          android:visibility="gone"
+          android:visibility="GONE"
           android:layout_width="match_parent"
           android:layout_height="match_parent"
           android:background="#00ff00" />
@@ -110,7 +110,7 @@ Il primo passaggio per implementare la soluzione è predisporre la visualizzazio
 </FrameLayout>
 \end{minted}
 
-La \texttt{View} è inizialmente nascosta (\texttt{gone}) e può essere resa visibile via codice così:
+La \texttt{View} è inizialmente nascosta (\texttt{GONE}) e può essere resa visibile via codice così:
 
 \begin{minted}{java}
 findViewById(R.id.rect).setVisibility(View.VISIBLE);
@@ -118,9 +118,9 @@ findViewById(R.id.rect).setVisibility(View.VISIBLE);
 
 A questo punto è necessario fare uso di timer e ritardi appositamente studiati per ottenere la situazione dello schema della figura \ref{fig:sync1}, cioè fare in modo che la videocamera riprenda il momento in cui la schermata verde viene abilitata.
 
-In fase di post-elaborazione del materiale acquisito, l'obiettivo principale è riuscire a ricavare dalla registrazione RTSP il tempo in cui compare il marcatore visivo, e cioè l'intervallo A della figura \ref{fig:sync2}. Per fare ciò si è deciso di usare \texttt{OpenCV}, nota libreria di visione artificiale.
+Passando alla fase di post-elaborazione del materiale acquisito, l'obiettivo principale è riuscire a ricavare dalla registrazione RTSP il tempo in cui compare il marcatore visivo, e cioè l'intervallo A della figura \ref{fig:sync2}. Per fare ciò è possibile usare \texttt{OpenCV}, una nota libreria di visione artificiale.
 
-Più in dettaglio, la tecnica sperimentata consiste nel calcolare la media delle tre componenti di colore RGB per ciascun fotogramma, e di provare poi a rilevare le variazioni significative di verde. Concettualmente, il parametro da considerare per individuare le variazioni è la "distanza" tra il colore verde e le altre componenti di colore, e cioè, in formula: $G - \frac{R+B}{2}$. Il blocco di codice che segue calcola questa distanza per ogni fotogramma del video. 
+Più in dettaglio, la tecnica sperimentata consiste nel calcolare la media delle tre componenti di colore RGB per ciascun fotogramma, e di provare poi a rilevare le variazioni significative di verde. Concettualmente, il parametro da considerare per individuare le variazioni è la "distanza" tra il colore verde e le altre componenti di colore, e cioè, in formula, $G - \frac{R+B}{2}$. Il blocco di codice che segue calcola questa distanza per ogni fotogramma del video. 
 
 \inputminted[xleftmargin=\parindent,linenos]{python}{res/opencv.py}
 
@@ -180,12 +180,15 @@ Per la precisione, la variazione in questo caso avviene leggermente prima del se
 [...]
 \end{minted}
 
-È quindi $5,94$ il valore corrispondente all'intervallo A dello schema \ref{fig:sync2}, che può essere sommato all'intervallo B per ottenere l'intervallo di tempo da tagliare all'inizio del video RTSP.
+È quindi $5,94$ secondi il valore corrispondente all'intervallo A dello schema \ref{fig:sync2}, che può essere sommato a B per ottenere l'intervallo di tempo da tagliare all'inizio del video RTSP.
 
-Supponendo che $A+B$ dia come risultato $8$, possiamo ora ritagliare il video RTSP e ottenere un ragionevole sincronismo tra i due flussi video. Il blocco che segue è una versione minima di un comando che usa \texttt{ffmpeg} per ritagliare i primi 8 secondi del file \texttt{rtsp.mp4}.
+Supponendo che $A+B$ dia come risultato $8$, possiamo ora ritagliare il video RTSP e ottenere un ragionevole sincronismo tra i due flussi video. Il blocco che segue è una versione minima di un comando che usa \texttt{ffmpeg} per rimuovere i primi 8 secondi del file \texttt{rtsp.mp4}.
 
 \begin{minted}[escapeinside=||]{text}
 > ffmpeg |\colorbox{LightCyan}{-ss 8}| -i rtsp.mp4 -r 25 rtsp-synced.mp4 -y
 \end{minted}
 
+I risultati ottenuti con questa soluzione sono soddisfacenti, ma soffrono di uno sfasamento cronico dovuto al fatto che il \emph{timestamp} memorizzato alla chiamata del metodo \texttt{start()} per l'avvio della registrazione HDMI non è preciso. Questo dipende dal fatto che il metodo \texttt{start()} ritorna istantaneamente, ma la registrazione effettiva inizia in realtà qualche decina (?) di millisecondi dopo. Considerato che questo ritardo è consistente e l'hardware è fisso, una possibilità potrebbe essere di compensarlo manualmente nel calcolo dell'intervallo $A+B$.
+
+[questo paragrafo è da quantificare in numeri appena recupero i dati dei test, che ora non ho a portata di mano...]
 
