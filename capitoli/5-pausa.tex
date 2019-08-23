@@ -74,7 +74,41 @@ La catena successiva (riga 5) considera i due segmenti etichettati \texttt{[0v]}
 %    -threads 0 out.mp4 -y
 %\end{minted}
 
-Con l'aumentare del numero dei segmenti da ritagliare e con l'aggiunta di una traccia audio, il comando \texttt{ffmpeg} può diventare complesso da scrivere, leggere e comprendere. La composizione del comando è quindi automatizzabile con un semplice script scritto in qualsiasi linguaggio, che prenda in input gli intervalli da rimuovere e produca in output il testo del comando da eseguire.
+Con l'aumentare del numero dei segmenti da ritagliare e con l'aggiunta di una traccia audio, il comando \texttt{ffmpeg} può diventare complesso da scrivere, leggere e comprendere. La composizione del comando è quindi automatizzabile con uno script che prenda in input gli intervalli da rimuovere e produca in output il testo del comando da eseguire. Il codice che segue è una implementazione di esempio in JavaScript, che è facilmente adattabile per includere anche una traccia audio.
 
-[script?]
+\begin{minted}[xleftmargin=\parindent,linenos]{javascript}
+let segmentsToCut = [ [20, 30] ];
+let segmentsToKeep = [ [0, segmentsToCut[0][0]] ];
+
+// Convert [segments to cut] to [segments to keep]
+for (let i = 0; i < segmentsToCut.length; i++) {
+    let cur = segmentsToCut[i];
+    let next = segmentsToCut[i+1] || [-1, -1];
+
+    segmentsToKeep.push([cur[1], next[0]]);
+}
+
+let cmd = 'ffmpeg -i input.mp4 -filter_complex "';
+
+// Add segments to trim (keep) to the command
+segmentsToKeep.forEach((trim, i) => {
+    cmd += `[0:v]trim=start=${trim[0]}`;
+	
+    if (trim[1] != -1) {
+        cmd += `:end=${trim[1]}`;
+    }
+	
+    cmd += `,setpts=PTS-STARTPTS[${i}v];`;
+});
+
+// List segments to concatenate
+for (let i in segmentsToKeep) {
+    cmd += `[${i}v]`;
+}
+
+cmd += `concat=n=${segmentsToKeep.length}:v=1:a=0[ov]"`;
+cmd += ' -map [ov]';
+cmd += ' -preset veryfast -r 25 -g 250 -crf 25 -refs 1';
+cmd += ' -threads 0 output.mp4 -y';
+\end{minted}
 
