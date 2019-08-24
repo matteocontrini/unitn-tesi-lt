@@ -1,19 +1,146 @@
 \chapter{Rilevamento delle differenze tra fotogrammi}
 \label{cha:diff}
-Lorem ipsum dolor sit amet.
 
-\section{In post-produzione}
+Una funzionalità innovativa introdotta dal sistema LODE è la possibilità per gli studenti di acquisire in tempo reale durante le lezioni degli screenshot di quanto viene proiettato. Dal punto di vista tecnico questo significa che il "box" deve poter acquisire singolarmente dei fotogrammi dall'ingresso HDMI e inviarli al server.
+
+Per evitare che richieste di screenshot molto vicine provochino inutili upload di screenshot, è possibile implementare un sistema per rilevare se uno screenshot è effettivamente nuovo, e in caso negativo riusare quello precedente.
+
+\section{Il formato YUV420SP}
+\label{sec:diff_yuv}
+
+Prima di iniziare a lavorare sul confronto delle immagini, è opportuno familiarizzare con il formato YUV420SP, che si incontra frequentemente nello sviluppo Android con il nome di NV12 o NV21.
+
+Prima di tutto, YUV420 è un termine approssimativo per riferirsi a Y'CbCr 4:2:0, un formato di pixel appartenente alla famiglia Y'CbCr, in cui il colore di un pixel è scomposto nelle componenti Y' (luminanza, scala di grigi\footnotemark{}), Cb/U (proiezione del blu) e Cr/V (proiezione del rosso).
+
+\footnotetext{La suddivisione delle componenti in Y, U e V deriva dal mondo analogico, quando c'era la necessità di supportare sia tv in bianco e nero che a colori. Avere una componente in scala di grigi isolata permette infatti di mantenere la retrocompatibilità pur introducendo il colore. In ambito digitale, è più corretto riferirsi a YUV con Y'CbCr.}
+
+Questa divisione permette di applicare una tecnica chiamata sottocampionamento della crominanza, che riduce la risoluzione delle due componenti della crominanza (Cb e Cr), lasciando a piena risoluzione la luminanza.\cite{yuv} Questa tecnica è fondata sul fatto che l'occhio umano è molto più sensibile all'intensità di luce che al colore\footnote{http://vanseodesign.com/web-design/color-luminance/} (figura \ref{fig:diff_mit}), per cui anche se riduciamo i "bit" per la rappresentazione della crominanza la differenza è nella gran parte dei casi quasi impercettibile. La grandissima maggioranza dei video normalmente fruibili tramite Internet o la televisione digitale sono codificati con un formato dei pixel Y'CbCr 4:2:0, che è il più diffuso in ambiti non professionali.
+
+% https://twitter.com/AkiyoshiKitaoka/status/1028473566193315841
+
+\begin{figure}[htbp]
+	\centering
+	
+	\begin{subfigure}[t]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{res/mit1.png}
+		\caption{}
+	\end{subfigure}%
+	~ 
+	\begin{subfigure}[t]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{res/mit2.png}
+		\caption{}
+	\end{subfigure}
+	
+	\caption{Rappresentazione grafica realizzata dal MIT\protect\footnotemark{} per mostrare come l'occhio umano è molto sensibile all'intensità della luce (luminanza). L'illusione ottica fa credere che i due riquadri A e B siano di una sfumatura di nero diversa, quando in realtà sono identici.}
+	\label{fig:diff_mit}
+\end{figure}
+
+\footnotetext{http://persci.mit.edu/gallery/checkershadow}
+
+La figura \ref{fig:diff_yuv420} mostra il sottocampionamento della crominanza 4:2:0 applicato a una griglia di dimensione 4 x 2 pixel. La componente Y, cioè la luminanza, viene campionata a piena risoluzione, e cioè per ogni pixel vengono catturate informazioni piene. L'informazione sulla crominanza, composta dalla componente blu e rossa\footnotemark{}, viene invece catturata a $1/4$ della risoluzione, e cioè è condivisa tra 4 pixel. In confronto a RGB24, questo formato richiede in media 12 bit per pixel anziché 24 (da qui il nome "NV12"), con un risparmio di dati del 50\% senza sacrificare visibilmente la qualità complessiva.
+
+\footnotetext{L'informazione sul verde non è esplicitamente memorizzata ma rappresenta circa il 60\% della componente Y: https://news.ycombinator.com/item?id=1892248}
+
+\begin{figure}[htbp]
+	\centering
+	
+	\includegraphics[width=0.8\textwidth]{res/yuv420.pdf}
+%	\includegraphics[width=0.9\textwidth]{res/yuv420.png}
+	
+	\caption{Sottocampionamento della crominanza 4:2:0. Il 4 indica la larghezza della griglia di altezza 2 (fissa). Il 2 indica che la risoluzione orizzontale è dimezzata, mentre lo zero che non ci sono campioni diversi tra la prima e la seconda riga.}
+	\label{fig:diff_yuv420}
+\end{figure}
+
+Nel momento in cui YUV420 deve essere rappresentato sotto forma di bit, i tre piani (Y, U e V) vengono isolati. Ad esempio, un pixel verrebbe rappresentato così (ogni lettera è un bit)\footnote{https://wiki.videolan.org/YUV}:
+
+\tikzset{
+	pixel/.style={node distance=1pt,font=\sffamily},
+	pixelY/.style={pixel,fill=black!15},
+	pixelU/.style={pixel,fill=RoyalBlue,text=white},
+	pixelV/.style={pixel,fill=red!80,text=white},
+	pixelSP/.style={pixel,fill=RawSienna,text=white},
+}
+
+\begin{figure}[H]
+	\begin{tikzpicture}
+	\node[pixelY] (y) {YYYYYYYY};
+	\node[pixelU,right=of y] (u) {UU};
+	\node[pixelV,right=of u] {VV};
+	\end{tikzpicture}
+\end{figure}
+
+Mentre in RGB ciascun pixel richiederebbe 8 bit per canale, in YUV420 i due piani della crominanza (blu e rosso) ne richiedono solo $1/4$, cioè 2.
+
+Di conseguenza, 2 pixel sarebbero rappresentati così, dove ciascuna coppia di U/V è relativa a un pixel:
+
+\begin{figure}[H]
+	\begin{tikzpicture}
+	\node[pixelY] (y) {YYYYYYYY YYYYYYYY};
+	\node[pixelU,right=of y] (u) {UU UU};
+	\node[pixelV,right=of u] {VV VV};
+	\end{tikzpicture}
+\end{figure}
+
+Il formato YUV420SP è invece una variante di YUV420 \emph{Semi Planar}, che significa che i piani U e V sono interlacciati in un unico piano. Un pixel YUV420SP (NV12) verrebbe quindi rappresentato così:
+
+\begin{figure}[H]
+	\begin{tikzpicture}
+	\node[pixelY] (y) {YYYYYYYY};
+	\node[pixelSP,right=of y] {UVUV};
+	\end{tikzpicture}
+\end{figure}
+
+E 2 pixel così:
+
+\begin{figure}[H]
+	\begin{tikzpicture}
+	\node[pixelY] (y) {YYYYYYYY YYYYYYYY};
+	\node[pixelSP,right=of y] {UVUV UVUV};
+	\end{tikzpicture}
+\end{figure}
+
+Come accennato, esiste anche il formato NV21, supportato da Android, che è uguale a NV12 ma con la differenza che le componenti U e V all'interno del secondo piano sono scambiate, come mostrato nell'esempio:
+
+\begin{figure}[H]
+	\begin{tikzpicture}
+	\node[pixelY] (y) {YYYYYYYY YYYYYYYY};
+	\node[pixelSP,right=of y] {VUVU VUVU};
+	\end{tikzpicture}
+\end{figure}
+
+Come si nota dagli schemi, in NV12/NV21 le informazioni sulla luminanza sono raggruppate all'inizio e utilizzano 1 byte per pixel. Questa caratteristica tornerà utile nelle prossime sezioni, in combinazione al fatto che Android fornisce le immagini acquisite dall'ingresso HDMI anche in formato NV21.
+
+\section{Confronto pixel per pixel}
+\label{sec:diff_full}
+
+La prima possibilità esplorata è la più immediata: catturare i fotogrammi in formato "non compresso" (NV21) e confrontarli byte per byte.
+
+Ricordando la classe \texttt{Camera} di Android introdotta nella sezione \ref{sec:hdmi_camera1}, si può sfruttare il metodo \texttt{setPreviewCallback(...)} per ricevere i dati "raw" che vengono mostrati su schermo.\footnote{https://developer.android.com/reference/android/hardware/Camera.PreviewCallback.html}
+
+\begin{minted}{java}
+camera.setPreviewCallback(new PreviewCallback() {
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        // `data` contiene i dati in formato NV21
+    }
+});
+\end{minted}
+
+Supponendo ora di avere due array di byte contenenti due fotogrammi catturati in momenti diversi, se le due immagini sono identiche, anche i pixel e quindi i relativi "byte" saranno identici. Per verificarlo si può usare il metodo \texttt{java.util.Arrays.equals(arr1, arr2)} di Java, che è implementato con un ciclo che confronta gli array byte per byte e si ferma eventualmente alla prima differenza.\footnote{https://hg.openjdk.java.net/jdk8/jdk8/jdk/file/687fd7c7986d/src/share/classes/java/util/Arrays.java\#l2668}
+
+Questo metodo è stato verificato e funziona in modo affidabile, ma ha lo svantaggio non trascurabile di non essere molto performante. Su uno degli hardware testati, il confronto di due fotogrammi con risoluzione 1920 x 1080 (e quindi di $3\,110\,400$ byte\footnote{$(1920 \cdot 1080) / 2$}) richiedeva circa 400 millisecondi.
+
+Come accennato nella sezione \ref{sec:diff_yuv}, l'occhio umano è più sensibile alla luminosità che ai colori. Si può quindi tentare di ridurre la quantità di byte da confrontare selezionando soltanto il piano Y, che rappresenta la luminanza. Si riduce così il numero di byte a $2\,073\,600$, cioè $2/3$ del totale. Le prestazioni restano però ancora un problema.
+
+\section{Confronto parziale}
+\label{sec:diff_parziale}
+
+
+
+\section{Estrazione slide in post-produzione}
 \label{sec:diff_postprod}
-
-Lorem ipsum dolor sit amet.
-
-\section{In tempo reale}
-\label{sec:diff_realtime}
-
-Lorem ipsum dolor sit amet.
-
-\subsection{Implementazione e sperimentazione}
-\label{sec:diff_realtime_impl}
 
 Lorem ipsum dolor sit amet.
 
