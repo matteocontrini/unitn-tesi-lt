@@ -24,13 +24,11 @@ Questa divisione permette di applicare una tecnica chiamata sottocampionamento d
 	\begin{subfigure}[t]{0.45\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{res/mit1.png}
-		\caption{}
 	\end{subfigure}%
 	~ 
 	\begin{subfigure}[t]{0.45\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{res/mit2.png}
-		\caption{}
 	\end{subfigure}
 	
 	\caption{Rappresentazione grafica realizzata dal MIT\protect\footnotemark{} per mostrare come l'occhio umano è molto sensibile all'intensità della luce (luminanza). L'illusione ottica fa credere che i due riquadri A e B siano di una sfumatura di nero diversa, quando in realtà sono identici.}
@@ -115,7 +113,7 @@ Come si nota dagli schemi, in NV12/NV21 le informazioni sulla luminanza sono rag
 \section{Confronto pixel per pixel}
 \label{sec:diff_full}
 
-La prima possibilità esplorata è la più immediata: catturare i fotogrammi in formato "non compresso" (NV21) e confrontarli byte per byte.
+La prima possibilità esplorata è la più immediata: catturare i fotogrammi in formato "non compresso" (NV21) e confrontarli byte per byte. La prima coppia di byte che ha valori diversi determina l'esistenza di una differenza tra i due fotogrammi.
 
 Ricordando la classe \texttt{Camera} di Android introdotta nella sezione \ref{sec:hdmi_camera1}, si può sfruttare il metodo \texttt{setPreviewCallback(...)} per ricevere i dati "raw" che vengono mostrati su schermo.\footnote{https://developer.android.com/reference/android/hardware/Camera.PreviewCallback.html}
 
@@ -128,16 +126,115 @@ camera.setPreviewCallback(new PreviewCallback() {
 });
 \end{minted}
 
-Supponendo ora di avere due array di byte contenenti due fotogrammi catturati in momenti diversi, se le due immagini sono identiche, anche i pixel e quindi i relativi "byte" saranno identici. Per verificarlo si può usare il metodo \texttt{java.util.Arrays.equals(arr1, arr2)} di Java, che è implementato con un ciclo che confronta gli array byte per byte e si ferma eventualmente alla prima differenza.\footnote{https://hg.openjdk.java.net/jdk8/jdk8/jdk/file/687fd7c7986d/src/share/classes/java/util/Arrays.java\#l2668}
+Supponendo ora di avere due array di byte contenenti due fotogrammi catturati in momenti diversi, si può concludere che se le due immagini sono identiche anche i valori dei pixel e quindi i relativi "byte" saranno identici. Di conseguenza, per confrontare i due array si può usare il metodo \texttt{Arrays.equals(arr1, arr2)} contenuto in \texttt{java.util}, che è implementato con un ciclo che confronta gli array byte per byte e si ferma eventualmente alla prima differenza.\footnote{https://hg.openjdk.java.net/jdk8/jdk8/jdk/file/687fd7c7986d/src/share/classes/java/util/Arrays.java\#l2668}
 
-Questo metodo è stato verificato e funziona in modo affidabile, ma ha lo svantaggio non trascurabile di non essere molto performante. Su uno degli hardware testati, il confronto di due fotogrammi con risoluzione 1920 x 1080 (e quindi di $3\,110\,400$ byte\footnote{$(1920 \cdot 1080) / 2$}) richiedeva circa 400 millisecondi.
+Questo metodo di rilevamento delle differenze è stato verificato e funziona in modo affidabile, ma ha lo svantaggio non trascurabile di non essere molto performante. Su uno degli hardware testati, il confronto di due fotogrammi con risoluzione 1920 x 1080 (e quindi di $3\,110\,400$ byte\footnote{$(1920 \cdot 1080) / 2$}) richiedeva circa 400 millisecondi.
 
-Come accennato nella sezione \ref{sec:diff_yuv}, l'occhio umano è più sensibile alla luminosità che ai colori. Si può quindi tentare di ridurre la quantità di byte da confrontare selezionando soltanto il piano Y, che rappresenta la luminanza. Si riduce così il numero di byte a $2\,073\,600$, cioè $2/3$ del totale. Le prestazioni restano però ancora un problema.
+Come accennato nella sezione \ref{sec:diff_yuv}, l'occhio umano è più sensibile alla luminanza che alla crominanza. Si può quindi tentare di ridurre la quantità di byte da confrontare selezionando soltanto il piano Y, che rappresenta la luminanza.
+
+In questo caso il confronto va implementato manualmente per considerare soltanto una parte dell'array, quella corrispondente al primo piano, che qua si suppone utilizzi un byte per pixel come nel caso di NV12/NV21:
+
+\begin{minted}{java}
+public boolean isLuminanceEqual(byte[] arr1, byte[] arr2, int width, int height) {
+    int maxLength = width * height;
+    
+    for (int i = 0; i < maxLength; i++) {
+        if (arr1[i] != arr2[i]) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+\end{minted}
+
+Assumendo una risoluzione di 1920 x 1080 pixel, il numero di byte da verificare si riduce a $2\,073\,600$, cioè $2/3$ del totale. La riduzione è interessante ma non risolutiva in termini di prestazioni.
 
 \section{Confronto parziale}
 \label{sec:diff_parziale}
 
+Una soluzione alternativa a confrontare l'intera immagine è individuare un sottoinsieme di pixel, da distribuire in modo da rendere sufficientemente probabile il rilevamento delle differenze.
 
+Si parte dal presupposto che durante una lezione vengano proiettati contenuti le cui variazioni sono abbastanza evidenti. Si pensi ad esempio a una presentazione di slide dove con il passaggio da una pagina all'altra varia l'intero contenuto proiettato o viene aggiunta una riga di testo, oppure a una finestra del browser dove lo scorrimento della pagina provoca lo spostamento di tutto il contenuto.
+
+Si può quindi costruire una griglia virtuale i cui punti di intersezione rappresentano i pixel da confrontare, come mostrato in figura \ref{fig:diff_slide1}. L'approccio funziona bene in molti casi: prendendo come riferimento la figura si immagini come l'aggiunta di una riga verrebbe facilmente rilevata dai punti stabiliti (che sono fissi).
+
+\tikzset{
+	gridline/.style={line width=0.4pt,color=lightgray},
+	gridarrow/.style={-{Straight Barb},very thick,red},
+}
+
+\begin{figure}[htbp]
+	\centering
+
+	\begin{tikzpicture}
+	% https://tex.stackexchange.com/questions/9559/drawing-on-an-image-with-tikz
+
+	\node[anchor=south west,inner sep=0] (image) at (0,0)
+		{\includegraphics[width=0.9\textwidth]{res/test-slide/beamer.pdf}};
+	
+	\begin{scope}[x={(image.south east)},y={(image.north west)}]
+%	\draw[color=black,thick,xstep=.1,ystep=.1] (0,0) grid (1,1);
+	\foreach \x in {1,...,9} { \draw[gridline] (\x/10,0) -- (\x/10,1); }
+	\foreach \y in {1,...,49} { \draw[gridline] (0,\y/50) -- (1,\y/50); }
+	\end{scope}
+	
+	\end{tikzpicture}
+	
+	\caption{La griglia è composta da 9 righe orizzontali e 49 verticali, per un totale di 441 punti di intersezione.}
+	\label{fig:diff_slide1}
+\end{figure}
+
+Ci sono tuttavia altri casi in cui i cambiamenti potrebbero riguardare delle aree non rilevate dai punti selezionati, come si deduce dalla figura \ref{fig:diff_slide2}.
+
+\begin{figure}[htbp]
+	\centering
+	
+	\begin{subfigure}[t]{0.5\textwidth}
+		\begin{tikzpicture}
+		\node[anchor=south west,inner sep=0] (image) at (0,0)
+		{\includegraphics[width=\textwidth]{res/slide3.png}};
+		
+		\begin{scope}[x={(image.south east)},y={(image.north west)}]
+		\foreach \x in {1,...,9} { \draw[gridline] (\x/10,0) -- (\x/10,1); }
+		\foreach \y in {1,...,49} { \draw[gridline] (0,\y/50) -- (1,\y/50); }
+		
+		\draw[gridarrow] (0.62,0.15) -- (0.68,0.29);
+		\end{scope}
+		
+		\end{tikzpicture}
+	\end{subfigure}%
+	~ 
+	\begin{subfigure}[t]{0.5\textwidth}
+		\begin{tikzpicture}
+		\node[anchor=south west,inner sep=0] (image) at (0,0)
+		{\includegraphics[width=\textwidth]{res/slide4.png}};
+		
+		\begin{scope}[x={(image.south east)},y={(image.north west)}]
+		\foreach \x in {1,...,9} { \draw[gridline] (\x/10,0) -- (\x/10,1); }
+		\foreach \y in {1,...,49} { \draw[gridline] (0,\y/50) -- (1,\y/50); }
+		
+		\draw[gridarrow] (0.62,0.15) -- (0.68,0.29);
+		\end{scope}
+		
+		\end{tikzpicture}
+	\end{subfigure}
+	
+	\caption{Anche in questo caso i punti di intersezione sono 441. Si noti però che l'area puntata dalla freccia presenta delle differenze tra i due fotogrammi che non vengono rilevate.}
+	\label{fig:diff_slide2}
+\end{figure}
+
+Si possono quindi considerare delle strategie alternative che permettono di aggirare questo problema. Ad esempio:
+
+\begin{itemize}
+	\item il numero di righe e colonne della griglia può essere ricalcolato ad ogni controllo aggiungendo un fattore di casualità. Se un controllo non riesce a rilevare differenze, la volta successiva potrebbe invece riuscirci, dato che i pixel campione saranno diversi (con ragionevole sicurezza);
+	\item la distanza orizzontale e verticale tra i punti può essere mantenuta costante, ma si può invece aggiungere uno scorrimento graduale verso destra e verso il basso dei punti, in modo da coprire aree diverse ad ogni controllo;
+	\item la strategia di scegliere un numero casuale di righe e colonne può essere resa più intelligente, per evitare che la stessa coordinata orizzontale e/o verticale venga considerata in diverse combinazioni della griglia.
+\end{itemize}
+
+La strategia del primo punto è stata sperimentata su diversi contenuti e ha dato ottimi risultati. Gran parte dei cambiamenti venivano rilevati al primo controllo, e in ogni caso entro 3-4 controlli. Nei test l'intervallo di verifica delle differenze era 500 millisecondi, per cui il ritardo massimo di rilevamento era di circa 2 secondi.
+
+Nei test effettuati il numero di colonne della griglia veniva scelto in modo casuale ad ogni controllo scegliendo nell'intervallo da 10 a 20, mentre il numero di righe tra 60 e 80. Con questi dati, nel peggiore dei casi il numero di pixel/byte da verificare è $1\,600$, un valore estremamente limitato se confrontato con i 3 milioni di byte della sezione \ref{sec:diff_full}. Le prestazioni di questa soluzione sono risultate di conseguenza molto buone, con un tempo di confronto limitato a pochi millisecondi. \hl{da ri-verificare con precisione}
 
 \section{Estrazione slide in post-produzione}
 \label{sec:diff_postprod}
