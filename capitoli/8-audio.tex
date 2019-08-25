@@ -1,4 +1,50 @@
-\chapter{Acquisizione audio (forse)}
+\chapter{Acquisizione audio}
 \label{cha:audio}
-Lorem ipsum dolor sit amet.
+
+La funzione di registrazione dell'audio è stata affrontata solo in modo marginale nei capitoli precedenti, ma è in realtà di primaria importanza. La registrazione deve essere infatti affidabile e tollerante a eventuali perdite di segnale in input, e idealmente dovrebbe anche consentire di segnalare in tempo reale il livello di volume, l'assenza di segnale o la presenza di picchi.
+
+Si assume in questo capitolo che la board Android sia dotata di un ingresso audio (es. jack $3,5mm$), o in alternativa che permetta di collegare una scheda audio tramite cavo USB. In entrambi i casi l'ingresso dovrebbe essere reso disponibile da Android in modo prioritario e automatico tramite le classi di registrazione di Android.
+
+\section{Registrazione con \texttt{MediaRecorder}}
+\label{sec:audio_mediarecord}
+
+Il \texttt{MediaRecorder} è stato accennato nel capitolo \ref{cha:hdmi} nell'ambito della registrazione dell'input video, ma è adatto anche per l'acquisizione e compressione di audio. Il suo uso è molto semplice ed è illustrato nel seguente blocco di codice:
+
+\begin{minted}{java}
+final MediaRecorder recorder = new MediaRecorder();
+recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+recorder.setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS);
+recorder.setOutputFile("/sdcard/audio/test.aac");
+recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+recorder.setAudioChannels(1);
+recorder.setAudioSamplingRate(44_100);
+recorder.setAudioEncodingBitRate(128_000);
+
+try {
+    recorder.prepare();
+} catch (IOException e) {
+    Log.e(TAG, "MediaRecorder preparation error", e);
+    return;
+}
+
+recorder.start();
+//recorder.stop();
+\end{minted}
+
+In questo esempio l'audio viene acquisito dalla sorgente identificata come \texttt{MIC}, e compresso con il codec \texttt{AAC-LC}.\footnotemark{} Tenendo presente che nell'ambito di LODE l'audio registrato è solitamente la voce di una persona che parla, una scelta può essere quella di registrare un solo canale audio con un bitrate abbastanza basso.
+
+\footnotetext{Advanced Audio Codec - Low Complexity. È un codec molto diffuso e ampiamente supportato, ed è considerato il successore di MP3. A parità di bitrate, AAC offre una qualità generalmente superiore rispetto a MP3.}
+
+Il \texttt{MediaRecorder} esponde inoltre un metodo \texttt{getMaxAmplitude()}, che secondo la documentazione\footnotemark{} ritorna la \emph{massima ampiezza assoluta misurata dall'ultima chiamata al metodo, oppure 0 alla prima chiamata}. Sfortunatamente, non sono disponibili altri dettagli ufficiali se non supposizioni verificate empiricamente.
+
+\footnotetext{\url{https://developer.android.com/reference/android/media/MediaRecorder.html\#getMaxAmplitude()}}
+
+Il metodo ritorna infatti un valore intero a 32 bit con segno, ma a quanto pare contiene in realtà una rappresentazione a 16 bit senza segno (ushort) dell'ampiezza del segnale.\footnote{\url{https://stackoverflow.com/q/10655703/1633924}} Questo valore può quindi essere la base per un approfondimento, ad esempio per provare a calcolare il livello di pressione sonora in decibel.
+
+\section{Acquisizione \emph{raw} con \texttt{AudioRecord}}
+\label{sec:audio_audiorecord}
+
+Nel caso se ne presentasse la necessità, Android offre anche una classe \texttt{AudioRecord} che fornisce un accesso più di basso livello all'ingresso audio/microfono. Permette infatti di leggere il segnale PCM (Pulse Code Modulation) non compresso a 16bit, con una frequenza di campionamento a piacere.
+
+Un esempio di codice che mostra alcuni particolari della registrazione PCM con \texttt{AudioRecord} è inserito nell'allegato \ref{cha:allegato_pcm}.
 

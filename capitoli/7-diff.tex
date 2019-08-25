@@ -2,7 +2,7 @@
 \chapter{Rilevamento delle differenze tra fotogrammi}
 \label{cha:diff}
 
-Una funzionalità innovativa introdotta dal sistema LODE è la possibilità per gli studenti di acquisire in tempo reale durante le lezioni degli screenshot di quanto viene proiettato. Dal punto di vista tecnico questo significa che il "box" deve poter acquisire singolarmente dei fotogrammi dall'ingresso HDMI e inviarli al server.
+Una funzionalità innovativa introdotta dal sistema LODE è la possibilità per gli studenti di acquisire in tempo reale durante le lezioni degli screenshot di quanto viene proiettato, utilizzando un'apposita applicazione web. Dal punto di vista tecnico questo significa che il "box" deve poter acquisire singolarmente dei fotogrammi dall'ingresso HDMI e inviarli al server.
 
 Per evitare che richieste di screenshot molto vicine provochino inutili upload di screenshot, è possibile implementare un sistema per rilevare se uno screenshot è effettivamente nuovo, e in caso negativo riusare quello precedente.
 
@@ -40,7 +40,7 @@ Questa divisione permette di applicare una tecnica chiamata sottocampionamento d
 
 La figura \ref{fig:diff_yuv420} mostra il sottocampionamento della crominanza 4:2:0 applicato a una griglia di dimensione 4 x 2 pixel. La componente Y, cioè la luminanza, viene campionata a piena risoluzione, e cioè per ogni pixel vengono catturate informazioni piene. L'informazione sulla crominanza, composta dalla componente blu e rossa\footnotemark{}, viene invece catturata a $1/4$ della risoluzione, e cioè è condivisa tra 4 pixel. In confronto a RGB24, questo formato richiede in media 12 bit per pixel anziché 24 (da qui il nome "NV12"), con un risparmio di dati del 50\% senza sacrificare visibilmente la qualità complessiva.
 
-\footnotetext{L'informazione sul verde non è esplicitamente memorizzata ma rappresenta circa il 60\% della componente Y: \url{https://news.ycombinator.com/item?id=1892248}}
+\footnotetext{L'informazione sul verde non è esplicitamente memorizzata ma rappresenta circa il 60\% della componente Y:\\ \url{https://news.ycombinator.com/item?id=1892248}}
 
 \begin{figure}[htbp]
 	\centering

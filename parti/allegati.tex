@@ -1,4 +1,60 @@
-\chapter{Titolo primo allegato}
+\chapter{La libreria MobileFFmpeg}
+\label{cha:allegato_ffmpeg}
 
 Lorem ipsum dolor sit amet.
+
+\chapter{Acquisizione audio PCM}
+\label{cha:allegato_pcm}
+
+Il blocco di codice che segue configura e avvia l'acquisizione della sorgente audio di default del dispositivo, impostando come formato PCM 16bit a $44,1 kHz$ e un canale.
+
+\begin{minted}{java}
+final int SAMPLING_RATE_IN_HZ = 44100;
+final int CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO;
+final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
+
+final int BUFFER_SIZE_FACTOR = 2;
+final int BUFFER_SIZE = BUFFER_SIZE_FACTOR *
+    AudioRecord.getMinBufferSize(SAMPLING_RATE_IN_HZ, CHANNEL_CONFIG, AUDIO_FORMAT);
+
+AudioRecord recorder = new AudioRecord(
+    MediaRecorder.AudioSource.DEFAULT,
+    SAMPLING_RATE_IN_HZ,
+    CHANNEL_CONFIG,
+    AUDIO_FORMAT,
+    BUFFER_SIZE);
+
+recorder.startRecording();
+\end{minted}
+
+L'acquisizione vera e propria dei campioni audio avviene però in un thread separato.
+
+\begin{minted}{java}
+Thread recordingThread = new Thread(new RecordingRunnable(), "RecordingThread");
+recordingThread.start();
+\end{minted}
+
+\begin{minted}{java}
+class RecordingRunnable implements Runnable {
+@Override
+public void run() {
+final File file = new File(Environment.getExternalStorageDirectory(), "/audio/" + System.currentTimeMillis() + ".pcm");
+
+short[] buffer = new short[BUFFER_SIZE];
+
+try (final FileOutputStream outStream = new FileOutputStream(file)) {
+while (recordingInProgress.get()) {
+int readSize = recorder.read(buffer, 0, buffer.length);
+
+if (readSize < 0) {
+throw new RuntimeException("Reading of audio buffer failed: " + getBufferReadFailureReason(readSize));
+}
+
+writeShortArrayToFile(buffer, outStream, readSize);
+}
+
+outStream.close();
+}
+}
+\end{minted}
 
