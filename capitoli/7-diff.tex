@@ -11,11 +11,11 @@ Per evitare che richieste di screenshot molto vicine provochino inutili upload d
 
 Prima di iniziare a lavorare sul confronto delle immagini, è opportuno familiarizzare con il formato YUV420SP, che si incontra frequentemente nello sviluppo Android con il nome di NV12 o NV21.
 
-Prima di tutto, YUV420 è un termine approssimativo per riferirsi a Y'CbCr 4:2:0, un formato di pixel appartenente alla famiglia Y'CbCr, in cui il colore di un pixel è scomposto nelle componenti Y' (luminanza, scala di grigi\footnotemark{}), Cb/U (proiezione del blu) e Cr/V (proiezione del rosso).
+Prima di tutto, YUV420 è un termine approssimativo per riferirsi a Y'CbCr 4:2:0, un formato di pixel appartenente alla famiglia Y'CbCr, in cui il colore di un pixel è scomposto nelle componenti Y' (luminanza, scala di grigi\footnotemark{}), Cb/U (proiezione del blu) e Cr/V (proiezione del rosso).\cite{yuv}
 
-\footnotetext{La suddivisione delle componenti in Y, U e V deriva dal mondo analogico, quando c'era la necessità di supportare sia tv in bianco e nero che a colori. Avere una componente in scala di grigi isolata permette infatti di mantenere la retrocompatibilità pur introducendo il colore. In ambito digitale, è più corretto riferirsi a YUV con Y'CbCr.}
+\footnotetext{La suddivisione delle componenti in Y, U e V deriva dal mondo analogico, quando c'era la necessità di supportare sia tv in bianco e nero che a colori. Avere una componente in scala di grigi isolata permette infatti di mantenere la retrocompatibilità pur introducendo il colore. In ambito digitale, è più corretto usare il termine Y'CbCr anziché YUV.}
 
-Questa divisione permette di applicare una tecnica chiamata sottocampionamento della crominanza, che riduce la risoluzione delle due componenti della crominanza (Cb e Cr), lasciando a piena risoluzione la luminanza.\cite{yuv} Questa tecnica è fondata sul fatto che l'occhio umano è molto più sensibile all'intensità di luce che al colore\footnote{http://vanseodesign.com/web-design/color-luminance/} (figura \ref{fig:diff_mit}), per cui anche se riduciamo i "bit" per la rappresentazione della crominanza la differenza è nella gran parte dei casi quasi impercettibile. La grandissima maggioranza dei video normalmente fruibili tramite Internet o la televisione digitale sono codificati con un formato dei pixel Y'CbCr 4:2:0, che è il più diffuso in ambiti non professionali.
+Questa divisione permette di applicare una tecnica chiamata sottocampionamento della crominanza, che riduce la risoluzione delle due componenti della crominanza (Cb e Cr), lasciando a piena risoluzione la luminanza. Questa tecnica è fondata sul fatto che l'occhio umano è molto più sensibile all'intensità di luce che al colore (figura \ref{fig:diff_mit}), per cui anche se riduciamo i "bit" per la rappresentazione della crominanza la differenza è nella gran parte dei casi quasi impercettibile.\cite{luminance} La grandissima maggioranza dei video normalmente fruibili tramite Internet o la televisione digitale sono codificati con un formato dei pixel Y'CbCr 4:2:0, che è il più diffuso in ambiti non professionali.
 
 % https://twitter.com/AkiyoshiKitaoka/status/1028473566193315841
 
@@ -32,7 +32,7 @@ Questa divisione permette di applicare una tecnica chiamata sottocampionamento d
 		\includegraphics[width=\textwidth]{res/mit2.png}
 	\end{subfigure}
 	
-	\caption{Rappresentazione grafica realizzata dal MIT\protect\footnotemark{} per mostrare come l'occhio umano è molto sensibile all'intensità della luce (luminanza). L'illusione ottica fa credere che i due riquadri A e B siano di una sfumatura di nero diversa, quando in realtà sono identici.}
+	\caption{Rappresentazione grafica realizzata dal MIT\protect\footnotemark{} per mostrare come l'occhio umano è molto sensibile all'intensità della luce (luminanza). L'illusione ottica fa credere che i due riquadri A e B siano di una sfumatura di grigio diversa, quando in realtà sono identici.}
 	\label{fig:diff_mit}
 \end{figure}
 
@@ -48,18 +48,22 @@ La figura \ref{fig:diff_yuv420} mostra il sottocampionamento della crominanza 4:
 	\includegraphics[width=0.8\textwidth]{res/yuv420.pdf}
 %	\includegraphics[width=0.9\textwidth]{res/yuv420.png}
 	
-	\caption{Sottocampionamento della crominanza 4:2:0. Il 4 indica la larghezza della griglia di altezza 2 (fissa). Il 2 indica che la risoluzione orizzontale è dimezzata, mentre lo zero che non ci sono campioni diversi tra la prima e la seconda riga.}
+	\caption{Sottocampionamento della crominanza 4:2:0. Il 4 indica la larghezza della griglia, che ha altezza 2 (fissa). Il 2 indica che la risoluzione orizzontale è dimezzata (2 campioni), mentre lo zero che non ci sono campioni diversi tra la prima e la seconda riga.}
 	\label{fig:diff_yuv420}
 \end{figure}
 
 Nel momento in cui YUV420 deve essere rappresentato sotto forma di bit, i tre piani (Y, U e V) vengono isolati. Ad esempio, un pixel verrebbe rappresentato così (ogni lettera è un bit)\footnote{https://wiki.videolan.org/YUV}:
 
+\definecolor{ChromaBlue}{HTML}{1160c6}
+\definecolor{ChromaRed}{HTML}{E60000}
+\definecolor{ChromaSP}{HTML}{ff9c00}
+
 \tikzset{
 	pixel/.style={node distance=1pt,font=\sffamily},
 	pixelY/.style={pixel,fill=black!15},
-	pixelU/.style={pixel,fill=RoyalBlue,text=white},
-	pixelV/.style={pixel,fill=red!80,text=white},
-	pixelSP/.style={pixel,fill=RawSienna,text=white},
+	pixelU/.style={pixel,fill=ChromaBlue,text=white},
+	pixelV/.style={pixel,fill=ChromaRed,text=white},
+	pixelSP/.style={pixel,fill=ChromaSP,text=white},
 }
 
 \begin{figure}[H]
@@ -233,9 +237,9 @@ Si possono quindi considerare delle strategie alternative che permettono di aggi
 	\item la strategia di scegliere un numero casuale di righe e colonne può essere resa più intelligente, per evitare che la stessa coordinata orizzontale e/o verticale venga considerata in diverse combinazioni della griglia.
 \end{itemize}
 
-La strategia del primo punto è stata sperimentata su diversi contenuti e ha dato ottimi risultati. Gran parte dei cambiamenti venivano rilevati al primo controllo, e in ogni caso entro 3-4 controlli. Nei test l'intervallo di verifica delle differenze era 500 millisecondi, per cui il ritardo massimo di rilevamento era di circa 2 secondi.
+La strategia del primo punto è stata sperimentata su diversi contenuti e ha dato ottimi risultati. Gran parte dei cambiamenti venivano rilevati al primo controllo, e in ogni caso entro 3-4 controlli. Nei test l'intervallo di verifica delle differenze era 500 millisecondi, per cui il ritardo massimo di rilevamento risultava di circa 2 secondi.
 
-Nei test effettuati il numero di colonne della griglia veniva scelto in modo casuale ad ogni controllo scegliendo nell'intervallo da 10 a 20, mentre il numero di righe tra 60 e 80. Con questi dati, nel peggiore dei casi il numero di pixel/byte da verificare è $1\,600$, un valore estremamente limitato se confrontato con i 3 milioni di byte della sezione \ref{sec:diff_full}. Le prestazioni di questa soluzione sono risultate di conseguenza molto buone, con un tempo di confronto limitato a pochi millisecondi. \hl{da ri-verificare con precisione}
+Nei test effettuati il numero di colonne e righe della griglia veniva scelto in modo casuale ad ogni controllo, scegliendo rispettivamente dall'intervallo $[10, 20]$ e $[60, 80]$. Con questi dati, nel peggiore dei casi il numero di pixel/byte da verificare è $1\,600$, un valore estremamente limitato se confrontato con i 3 milioni di byte della sezione \ref{sec:diff_full}. Le prestazioni di questa soluzione sono risultate di conseguenza molto buone, con un tempo di confronto limitato a pochi millisecondi. \hl{da ri-verificare con precisione}
 
 \hl{long polling?}
 
