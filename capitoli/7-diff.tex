@@ -1,3 +1,4 @@
+\needspace{10\baselineskip}
 \chapter{Rilevamento delle differenze tra fotogrammi}
 \label{cha:diff}
 
@@ -153,7 +154,7 @@ Assumendo una risoluzione di 1920 x 1080 pixel, il numero di byte da verificare 
 \section{Confronto parziale}
 \label{sec:diff_parziale}
 
-Una soluzione alternativa a confrontare l'intera immagine è individuare un sottoinsieme di pixel, da distribuire in modo da rendere sufficientemente probabile il rilevamento delle differenze.
+Una soluzione alternativa a confrontare l'intera immagine è individuare un sottoinsieme di pixel, distribuito in modo da rendere sufficientemente probabile il rilevamento delle differenze.
 
 Si parte dal presupposto che durante una lezione vengano proiettati contenuti le cui variazioni sono abbastanza evidenti. Si pensi ad esempio a una presentazione di slide dove con il passaggio da una pagina all'altra varia l'intero contenuto proiettato o viene aggiunta una riga di testo, oppure a una finestra del browser dove lo scorrimento della pagina provoca lo spostamento di tutto il contenuto.
 
@@ -235,6 +236,8 @@ Si possono quindi considerare delle strategie alternative che permettono di aggi
 La strategia del primo punto è stata sperimentata su diversi contenuti e ha dato ottimi risultati. Gran parte dei cambiamenti venivano rilevati al primo controllo, e in ogni caso entro 3-4 controlli. Nei test l'intervallo di verifica delle differenze era 500 millisecondi, per cui il ritardo massimo di rilevamento era di circa 2 secondi.
 
 Nei test effettuati il numero di colonne della griglia veniva scelto in modo casuale ad ogni controllo scegliendo nell'intervallo da 10 a 20, mentre il numero di righe tra 60 e 80. Con questi dati, nel peggiore dei casi il numero di pixel/byte da verificare è $1\,600$, un valore estremamente limitato se confrontato con i 3 milioni di byte della sezione \ref{sec:diff_full}. Le prestazioni di questa soluzione sono risultate di conseguenza molto buone, con un tempo di confronto limitato a pochi millisecondi. \hl{da ri-verificare con precisione}
+
+\hl{long polling?}
 
 \section{Estrazione slide in post-produzione}
 \label{sec:diff_postprod}

@@ -35,8 +35,9 @@ public void onWindowFocusChanged(boolean hasFocus) {
 \end{minted}
 
 
-Questa soluzione ha l'effetto di nascondere le due barre di sistema, ma solo fintantoché l'utente non preme un qualsiasi punto dello schermo. Per questo Google ha introdotto anche una "modalità immersiva", che permette di mantenere l'applicazione a schermo intero fino a quando l'utente non scorre dai bordi dello schermo.\footnote{https://developer.android.com/training/system-ui/immersive}
+Questa soluzione ha l'effetto di nascondere le due barre di sistema, ma solo fintantoché l'utente non preme un qualsiasi punto dello schermo. Per questo Google ha introdotto anche una "modalità immersiva", che permette di mantenere l'applicazione a schermo intero fino a quando l'utente non scorre dai bordi dello schermo, come mostrato in seguito.\footnote{https://developer.android.com/training/system-ui/immersive}
 
+\begin{figure}
 \begin{minted}[highlightlines={7,9,10,11}]{java}
 private void goFullScreen() {
     getWindow().getDecorView().setSystemUiVisibility(
@@ -51,6 +52,7 @@ private void goFullScreen() {
         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 }
 \end{minted}
+\end{figure}
 
 
 \section{L'\emph{overscan} di sistema}
@@ -86,8 +88,7 @@ usage: wm [subcommand] [options]
 wm size [reset|WxH|WdpxHdp]
 wm density [reset|DENSITY]
 wm overscan [reset|LEFT,TOP,RIGHT,BOTTOM]
-wm scaling [off|auto]
-wm screen-capture [userId] [true|false]
+[...]
 
 > adb shell wm overscan 0,-25,0,-48
 \end{minted}
@@ -106,7 +107,15 @@ Per completezza, l'overscan può essere disabilitato con questo comando:
 
 In aggiunta ai metodi illustrati nei capitoli precedenti, Android fornisce a partire dalla versione 5.0 una modalità chiamata \emph{lock task}, che fa parte di un insieme più ampio di API per la realizzazione di dispositivi dedicati (in passato chiamati COSU, Corporate-Owned Single-Use). Queste API fanno a loro volta parte di Android Enterprise, che propone soluzioni specifiche per casi d'uso aziendali.
 
-Quando la modalità lock task viene abilitata, il sistema operativo entra in una modalità rigida che permette di usare solo un insieme di applicazioni definite manualmente tramite una \emph{whitelist}. Inoltre, la barra di stato viene disabilitata, le notifiche sono soppresse, e l'utilizzatore non può navigare nel sistema al di fuori delle app inserite in whitelist.\footnote{https://developer.android.com/work/dpc/dedicated-devices/lock-task-mode}
+Quando la modalità lock task viene abilitata, il sistema operativo entra in una modalità rigida che permette di usare solo un insieme di applicazioni definite manualmente tramite una \emph{whitelist}. Inoltre, la barra di stato viene disabilitata (figura \ref{fig:kiosk_locktask}), le notifiche sono soppresse, e l'utilizzatore non può navigare nel sistema al di fuori delle app inserite in whitelist.\footnote{https://developer.android.com/work/dpc/dedicated-devices/lock-task-mode}
+
+\begin{figure}[h]
+	\hl{aggiungere immagine lock task mode}
+	\vspace{7cm}
+	
+	\caption{Lock task mode}
+	\label{fig:kiosk_locktask}
+\end{figure}
 
 Per implementare la modalità lock task sono necessari due componenti: un Device Policy Controller (DPC) e una \texttt{Activity} da lanciare. Il DPC deve essere un'applicazione "proprietaria del dispositivo", e cioè deve avere dei privilegi speciali per modificare alcune funzioni di sistema. Ha infatti il compito di configurare la modalità lock task elencando i nomi dei \emph{package} da inserire in whitelist.
 
@@ -141,10 +150,6 @@ public void onResume() {
     }
 }
 \end{minted}
-
-\begin{figure}[htbp]
-	\hl{aggiungere immagine lock task mode}
-\end{figure}
 
 Se ben configurata, questa soluzione, combinata con le tecniche mostrate nei capitoli precedenti, permette di avere un'applicazione a schermo intero da cui è impossibile uscire.
 
