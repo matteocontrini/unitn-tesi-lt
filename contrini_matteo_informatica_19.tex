@@ -46,8 +46,13 @@
 % \hl
 \usepackage{soulutf8}
 
-% spazio prima di inizio capitoli
+% per il comando \needspace per mandare i capitoli nella pagina successiva
 \usepackage{needspace}
+
+% per ridurre lo spazio dopo il titolo "Indice"
+\usepackage{tocloft}
+\setlength{\cftbeforetoctitleskip}{60pt} % default di libreria 50pt, 60pt è circa quando si ottiene senza la libreria
+\setlength{\cftaftertoctitleskip}{10pt} % default 40pt, uguale al default senza libreria
 
 % link e indice/bookmarks + \url e \href
 % TENERE PER ULTIMO
