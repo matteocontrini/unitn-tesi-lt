@@ -35,7 +35,7 @@ public void onWindowFocusChanged(boolean hasFocus) {
 \end{minted}
 
 
-Questa soluzione ha l'effetto di nascondere le due barre di sistema, ma solo fintantoché l'utente non preme un qualsiasi punto dello schermo. Per questo Google ha introdotto anche una "modalità immersiva", che permette di mantenere l'applicazione a schermo intero fino a quando l'utente non scorre dai bordi dello schermo, come mostrato in seguito.\footnote{https://developer.android.com/training/system-ui/immersive}
+Questa soluzione ha l'effetto di nascondere le due barre di sistema, ma solo fintantoché l'utente non preme un qualsiasi punto dello schermo. Per questo Google ha introdotto anche una "modalità immersiva", che permette di mantenere l'applicazione a schermo intero fino a quando l'utente non scorre dai bordi dello schermo, come mostrato in seguito.\footnote{\url{https://developer.android.com/training/system-ui/immersive}}
 
 \begin{figure}
 \begin{minted}[highlightlines={7,9,10,11}]{java}
@@ -107,7 +107,7 @@ Per completezza, l'overscan può essere disabilitato con questo comando:
 
 In aggiunta ai metodi illustrati nei capitoli precedenti, Android fornisce a partire dalla versione 5.0 una modalità chiamata \emph{lock task}, che fa parte di un insieme più ampio di API per la realizzazione di dispositivi dedicati (in passato chiamati COSU, Corporate-Owned Single-Use). Queste API fanno a loro volta parte di Android Enterprise, che propone soluzioni specifiche per casi d'uso aziendali.
 
-Quando la modalità lock task viene abilitata, il sistema operativo entra in una modalità rigida che permette di usare solo un insieme di applicazioni definite manualmente tramite una \emph{whitelist}. Inoltre, la barra di stato viene disabilitata (figura \ref{fig:kiosk_locktask}), le notifiche sono soppresse, e l'utilizzatore non può navigare nel sistema al di fuori delle app inserite in whitelist.\footnote{https://developer.android.com/work/dpc/dedicated-devices/lock-task-mode}
+Quando la modalità lock task viene abilitata, il sistema operativo entra in una modalità rigida che permette di usare solo un insieme di applicazioni definite manualmente tramite una \emph{whitelist}. Inoltre, la barra di stato viene disabilitata (figura \ref{fig:kiosk_locktask}), le notifiche sono soppresse, e l'utilizzatore non può navigare nel sistema al di fuori delle app inserite in whitelist.\footnote{\url{https://developer.android.com/work/dpc/dedicated-devices/lock-task-mode}}
 
 \begin{figure}[h]
 	\hl{aggiungere immagine lock task mode}
@@ -119,7 +119,7 @@ Quando la modalità lock task viene abilitata, il sistema operativo entra in una
 
 Per implementare la modalità lock task sono necessari due componenti: un Device Policy Controller (DPC) e una \texttt{Activity} da lanciare. Il DPC deve essere un'applicazione "proprietaria del dispositivo", e cioè deve avere dei privilegi speciali per modificare alcune funzioni di sistema. Ha infatti il compito di configurare la modalità lock task elencando i nomi dei \emph{package} da inserire in whitelist.
 
-La procedura per la realizzazione di un DPC è articolata ed è dettagliata nella documentazione di Android\footnote{https://developer.android.com/guide/topics/admin/device-admin.html\#developing}, ma è sufficiente sapere che viene fornito un metodo per scegliere quali applicazioni possono essere eseguite in modalità lock task:
+La procedura per la realizzazione di un DPC è articolata ed è dettagliata nella documentazione di Android\footnote{\url{https://developer.android.com/guide/topics/admin/device-admin.html\#developing}}, ma è sufficiente sapere che viene fornito un metodo per scegliere quali applicazioni possono essere eseguite in modalità lock task:
 
 \begin{minted}[highlightlines=4]{java}
 DevicePolicyManager dpm =
@@ -128,7 +128,7 @@ ComponentName adminName = getComponentName(this);
 dpm.setLockTaskPackages(adminName, new String[] { "it.unitn.lode" });
 \end{minted}
 
-Google fornisce inoltre un'applicazione chiamata "Test DPC" che implementa numerose funzionalità legate alle policy aziendali, tra cui la configurazione della whitelist. L'applicazione è particolarmente utile durante lo sviluppo, perché permette di effettuare test rapidamente senza sviluppare un DPC. L'installazione è semplice e prevede di impostare "Test DPC" come proprietario del dispositivo:\footnote{https://codelabs.developers.google.com/codelabs/cosu/index.html\#6}
+Google fornisce inoltre un'applicazione chiamata "Test DPC" che implementa numerose funzionalità legate alle policy aziendali, tra cui la configurazione della whitelist. L'applicazione è particolarmente utile durante lo sviluppo, perché permette di effettuare test rapidamente senza sviluppare un DPC. L'installazione è semplice e prevede di impostare "Test DPC" come proprietario del dispositivo:\footnote{\url{https://codelabs.developers.google.com/codelabs/cosu/index.html\#6}}
 
 \begin{minted}{bash}
 > adb install TestDPC.apk
@@ -175,7 +175,7 @@ Il blocco di codice seguente mostra una porzione del file \texttt{AndroidManifes
 \section{L'animazione di avvio}
 \label{sec:kiosk_bootanimation}
 
-Come ultimo aspetto, un requisito di un sistema embedded potrebbe essere quello di non mostrare i marchi di Android o del produttore dell'hardware. Fortunatamente, Android permette in modo abbastanza facile di sostituire l'animazione di avvio del sistema con una a piacere.\footnote{https://android.googlesource.com/platform/frameworks/base/+/master/cmds/bootanimation/FORMAT.md}
+Come ultimo aspetto, un requisito di un sistema embedded potrebbe essere quello di non mostrare i marchi di Android o del produttore dell'hardware. Fortunatamente, Android permette in modo abbastanza facile di sostituire l'animazione di avvio del sistema con una a piacere.\footnote{\url{https://android.googlesource.com/platform/frameworks/base/+/master/cmds/bootanimation/FORMAT.md}}
 
 In fase di avvio, il sistema legge il file \texttt{/system/media/bootanimation.zip} ed estrae una descrizione dell'animazione (\texttt{desc.txt}) e un insieme di file PNG rappresentanti i fotogrammi da mostrare in sequenza su schermo.
 

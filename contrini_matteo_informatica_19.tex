@@ -43,21 +43,18 @@
 % figure affiancate
 \usepackage{subcaption}
 
-% bibliografia con url
-\usepackage{url}
-
 % \hl
 \usepackage{soulutf8}
 
 % spazio prima di inizio capitoli
 \usepackage{needspace}
 
-% link e indice/bookmarks
+% link e indice/bookmarks + \url e \href
 % TENERE PER ULTIMO
+\PassOptionsToPackage{hyphens}{url}
 \usepackage[
 	pdftex,
 	hidelinks,
-	breaklinks,
 	pdftitle={Realizzazione di un sistema basato su Android per l'acquisizione multimediale di lezioni universitarie},
 	pdfauthor={Matteo Contrini}]{hyperref}
 

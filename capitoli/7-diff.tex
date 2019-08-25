@@ -36,11 +36,11 @@ Questa divisione permette di applicare una tecnica chiamata sottocampionamento d
 	\label{fig:diff_mit}
 \end{figure}
 
-\footnotetext{http://persci.mit.edu/gallery/checkershadow}
+\footnotetext{\url{http://persci.mit.edu/gallery/checkershadow}}
 
 La figura \ref{fig:diff_yuv420} mostra il sottocampionamento della crominanza 4:2:0 applicato a una griglia di dimensione 4 x 2 pixel. La componente Y, cioè la luminanza, viene campionata a piena risoluzione, e cioè per ogni pixel vengono catturate informazioni piene. L'informazione sulla crominanza, composta dalla componente blu e rossa\footnotemark{}, viene invece catturata a $1/4$ della risoluzione, e cioè è condivisa tra 4 pixel. In confronto a RGB24, questo formato richiede in media 12 bit per pixel anziché 24 (da qui il nome "NV12"), con un risparmio di dati del 50\% senza sacrificare visibilmente la qualità complessiva.
 
-\footnotetext{L'informazione sul verde non è esplicitamente memorizzata ma rappresenta circa il 60\% della componente Y: https://news.ycombinator.com/item?id=1892248}
+\footnotetext{L'informazione sul verde non è esplicitamente memorizzata ma rappresenta circa il 60\% della componente Y: \url{https://news.ycombinator.com/item?id=1892248}}
 
 \begin{figure}[htbp]
 	\centering
@@ -52,7 +52,7 @@ La figura \ref{fig:diff_yuv420} mostra il sottocampionamento della crominanza 4:
 	\label{fig:diff_yuv420}
 \end{figure}
 
-Nel momento in cui YUV420 deve essere rappresentato sotto forma di bit, i tre piani (Y, U e V) vengono isolati. Ad esempio, un pixel verrebbe rappresentato così (ogni lettera è un bit)\footnote{https://wiki.videolan.org/YUV}:
+Nel momento in cui YUV420 deve essere rappresentato sotto forma di bit, i tre piani (Y, U e V) vengono isolati. Ad esempio, un pixel verrebbe rappresentato così (ogni lettera è un bit)\footnote{\url{https://wiki.videolan.org/YUV}}:
 
 \definecolor{ChromaBlue}{HTML}{1160c6}
 \definecolor{ChromaRed}{HTML}{E60000}
@@ -120,7 +120,7 @@ Come si nota dagli schemi, in NV12/NV21 le informazioni sulla luminanza sono rag
 
 La prima possibilità esplorata è la più immediata: catturare i fotogrammi in formato "non compresso" (NV21) e confrontarli byte per byte. La prima coppia di byte che ha valori diversi determina l'esistenza di una differenza tra i due fotogrammi.
 
-Ricordando la classe \texttt{Camera} di Android introdotta nella sezione \ref{sec:hdmi_camera1}, si può sfruttare il metodo \texttt{setPreviewCallback(...)} per ricevere i dati "raw" che vengono mostrati su schermo.\footnote{https://developer.android.com/reference/android/hardware/Camera.PreviewCallback.html}
+Ricordando la classe \texttt{Camera} di Android introdotta nella sezione \ref{sec:hdmi_camera1}, si può sfruttare il metodo \texttt{setPreviewCallback(...)} per ricevere i dati "raw" che vengono mostrati su schermo.\footnote{\url{https://developer.android.com/reference/android/hardware/Camera.PreviewCallback.html}}
 
 \begin{minted}{java}
 camera.setPreviewCallback(new PreviewCallback() {
@@ -131,7 +131,7 @@ camera.setPreviewCallback(new PreviewCallback() {
 });
 \end{minted}
 
-Supponendo ora di avere due array di byte contenenti due fotogrammi catturati in momenti diversi, si può concludere che se le due immagini sono identiche anche i valori dei pixel e quindi i relativi "byte" saranno identici. Di conseguenza, per confrontare i due array si può usare il metodo \texttt{Arrays.equals(arr1, arr2)} contenuto in \texttt{java.util}, che è implementato con un ciclo che confronta gli array byte per byte e si ferma eventualmente alla prima differenza.\footnote{https://hg.openjdk.java.net/jdk8/jdk8/jdk/file/687fd7c7986d/src/share/classes/java/util/Arrays.java\#l2668}
+Supponendo ora di avere due array di byte contenenti due fotogrammi catturati in momenti diversi, si può concludere che se le due immagini sono identiche anche i valori dei pixel e quindi i relativi "byte" saranno identici. Di conseguenza, per confrontare i due array si può usare il metodo \texttt{Arrays.equals(arr1, arr2)} contenuto in \texttt{java.util}, che è implementato con un ciclo che confronta gli array byte per byte e si ferma eventualmente alla prima differenza.\footnote{\url{https://hg.openjdk.java.net/jdk8/jdk8/jdk/file/687fd7c7986d/src/share/classes/java/util/Arrays.java\#l2668}}
 
 Questo metodo di rilevamento delle differenze è stato verificato e funziona in modo affidabile, ma ha lo svantaggio non trascurabile di non essere molto performante. Su uno degli hardware testati, il confronto di due fotogrammi con risoluzione 1920 x 1080 (e quindi di $3\,110\,400$ byte\footnote{$(1920 \cdot 1080) / 2$}) richiedeva circa 400 millisecondi.
 
@@ -186,7 +186,7 @@ Si può quindi costruire una griglia virtuale i cui punti di intersezione rappre
 	
 	\end{tikzpicture}
 	
-	\caption{La griglia è composta da 9 righe orizzontali e 49 verticali, per un totale di 441 punti di intersezione.}
+	\caption{La griglia è composta da 9 righe orizzontali e 49 verticali, per un totale di 441 punti.}
 	\label{fig:diff_slide1}
 \end{figure}
 
@@ -225,7 +225,7 @@ Ci sono tuttavia altri casi in cui i cambiamenti potrebbero riguardare delle are
 		\end{tikzpicture}
 	\end{subfigure}
 	
-	\caption{Anche in questo caso i punti di intersezione sono 441. Si noti però che l'area puntata dalla freccia presenta delle differenze tra i due fotogrammi che non vengono rilevate.}
+	\caption{Anche in questo caso i punti di intersezione sono 441. Si noti però che l'area puntata dalla freccia presenta delle differenze tra i due fotogrammi che non vengono rilevate. Le immagini sono state gentilmente offerte dal prof. Alberto Montresor.}
 	\label{fig:diff_slide2}
 \end{figure}
 

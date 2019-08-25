@@ -33,7 +33,7 @@ In alternativa a MPEG-2 TS si può scegliere anche MPEG-2 PS (Program Stream), c
          -c:v copy -an |\colorbox{LightCyan}{-f vob out.mpg}| -y
 \end{minted}
 
-In una applicazione Android, è possibile utilizzare dei wrapper appositamente realizzati per sfruttare \texttt{ffmpeg} sulle architetture tipiche di Android (tra cui ARM). Per le sperimentazioni è stata presa in considerazione la libreria open source \texttt{MobileFFmpeg}\footnote{https://github.com/tanersener/mobile-ffmpeg}, anche per via dell'ottimo stato di mantenimento e aggiornamento del progetto.
+In una applicazione Android, è possibile utilizzare dei wrapper appositamente realizzati per sfruttare \texttt{ffmpeg} sulle architetture tipiche di Android (tra cui ARM). Per le sperimentazioni è stata presa in considerazione la libreria open source \texttt{MobileFFmpeg}\footnote{\url{https://github.com/tanersener/mobile-ffmpeg}}, anche per via dell'ottimo stato di mantenimento e aggiornamento del progetto.
 
 \texttt{MobileFFmpeg} è fornita in diverse varianti, a seconda delle versioni di Android che si desidera supportare e dei moduli di \texttt{ffmpeg} di cui si necessita. Per fare un esempio, il pacchetto identificato come \texttt{com.arthenica:mobile-ffmpeg-min:4.2.LTS} è una versione base (\texttt{min}) che non include il supporto a nessuna libreria esterna (nessun encoder/decoder), ma che comprende comunque il supporto a RTSP e al muxing. \texttt{LTS} sta a indicare che la versione minima di Android supportata è 4.1, a differenza della versione non LTS che richiede Android 7.0 o superiore.
 
