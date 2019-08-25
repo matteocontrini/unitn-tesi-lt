@@ -133,7 +133,7 @@ camera.setPreviewCallback(new PreviewCallback() {
 
 Supponendo ora di avere due array di byte contenenti due fotogrammi catturati in momenti diversi, si può concludere che se le due immagini sono identiche anche i valori dei pixel e quindi i relativi "byte" saranno identici. Di conseguenza, per confrontare i due array si può usare il metodo \texttt{Arrays.equals(arr1, arr2)} contenuto in \texttt{java.util}, che è implementato con un ciclo che confronta gli array byte per byte e si ferma eventualmente alla prima differenza.\footnote{\url{https://hg.openjdk.java.net/jdk8/jdk8/jdk/file/687fd7c7986d/src/share/classes/java/util/Arrays.java\#l2668}}
 
-Questo metodo di rilevamento delle differenze è stato verificato e funziona in modo affidabile, ma ha lo svantaggio non trascurabile di non essere molto performante. Su uno degli hardware testati, il confronto di due fotogrammi con risoluzione 1920 x 1080 (e quindi di $3\,110\,400$ byte\footnote{$(1920 \cdot 1080) / 2$}) richiedeva circa 400 millisecondi.
+Questo metodo di rilevamento delle differenze è stato verificato e funziona in modo affidabile, ma ha lo svantaggio non trascurabile di non essere molto performante. Su uno degli hardware testati, il confronto di due fotogrammi con risoluzione 1920 x 1080 (e quindi di $3\,110\,400$ byte\footnote{$(1920 \cdot 1080) / 2$}) richiedeva in media tra i 400 e i 450 millisecondi. Su un altra board simile il tempo medio risultava di circa 100 millisecondi.
 
 Come accennato nella sezione \ref{sec:diff_yuv}, l'occhio umano è più sensibile alla luminanza che alla crominanza. Si può quindi tentare di ridurre la quantità di byte da confrontare selezionando soltanto il piano Y, che rappresenta la luminanza.
 
@@ -186,7 +186,7 @@ Si può quindi costruire una griglia virtuale i cui punti di intersezione rappre
 	
 	\end{tikzpicture}
 	
-	\caption{La griglia è composta da 9 righe orizzontali e 49 verticali, per un totale di 441 punti.}
+	\caption{La griglia è composta da 9 righe orizzontali e 49 verticali, per un totale di 441 punti di intersezione.}
 	\label{fig:diff_slide1}
 \end{figure}
 
@@ -232,6 +232,7 @@ Ci sono tuttavia altri casi in cui i cambiamenti potrebbero riguardare delle are
 Si possono quindi considerare delle strategie alternative che permettono di aggirare questo problema. Ad esempio:
 
 \begin{itemize}
+	\item il numero di colonne può essere aumentato in modo da rendere la griglia più "fitta" e rilevare non solo aggiunte di frasi ma anche brevi parole o simboli;
 	\item il numero di righe e colonne della griglia può essere ricalcolato ad ogni controllo aggiungendo un fattore di casualità. Se un controllo non riesce a rilevare differenze, la volta successiva potrebbe invece riuscirci, dato che i pixel campione saranno diversi (con ragionevole sicurezza);
 	\item la distanza orizzontale e verticale tra i punti può essere mantenuta costante, ma si può invece aggiungere uno scorrimento graduale verso destra e verso il basso dei punti, in modo da coprire aree diverse ad ogni controllo;
 	\item la strategia di scegliere un numero casuale di righe e colonne può essere resa più intelligente, per evitare che la stessa coordinata orizzontale e/o verticale venga considerata in diverse combinazioni della griglia.
@@ -239,12 +240,94 @@ Si possono quindi considerare delle strategie alternative che permettono di aggi
 
 La strategia del primo punto è stata sperimentata su diversi contenuti e ha dato ottimi risultati. Gran parte dei cambiamenti venivano rilevati al primo controllo, e in ogni caso entro 3-4 controlli. Nei test l'intervallo di verifica delle differenze era 500 millisecondi, per cui il ritardo massimo di rilevamento risultava di circa 2 secondi.
 
-Nei test effettuati il numero di colonne e righe della griglia veniva scelto in modo casuale ad ogni controllo, scegliendo rispettivamente dall'intervallo $[10, 20]$ e $[60, 80]$. Con questi dati, nel peggiore dei casi il numero di pixel/byte da verificare è $1\,600$, un valore estremamente limitato se confrontato con i 3 milioni di byte della sezione \ref{sec:diff_full}. Le prestazioni di questa soluzione sono risultate di conseguenza molto buone, con un tempo di confronto limitato a pochi millisecondi. \hl{da ri-verificare con precisione}
+Nei test effettuati il numero di colonne e righe della griglia veniva scelto in modo casuale ad ogni controllo, scegliendo rispettivamente dall'intervallo $[10, 20]$ e $[60, 80]$. Con questi dati, nel peggiore dei casi il numero di pixel/byte da verificare è $1\,600$, un valore estremamente limitato se confrontato con i 3 milioni di byte della sezione \ref{sec:diff_full}. Le prestazioni di questa soluzione sono risultate di conseguenza molto buone, con un tempo di confronto limitato a pochi millisecondi. \hl{recuperare dati precisi}
 
 \hl{long polling?}
 
-\section{Estrazione slide in post-produzione}
+\section{Estrazione slide in post-elaborazione}
 \label{sec:diff_postprod}
 
-Lorem ipsum dolor sit amet.
+Un'altra possibile applicazione del rilevamento delle differenze è l'estrazione di "istantanee" del video registrato in fase di post-elaborazione. I fotogrammi estratti potrebbe poi essere utilizzati come indici legati a punti specifici del video, consentendo di costruire funzionalità come il salto preciso a una slide specifica, oppure in generale come anteprime rappresentative del video.
+
+Per estrarre tutti i fotogrammi "unici" da un video ci viene ancora una volta in aiuto \texttt{ffmpeg}, in particolare con un filtro chiamato \texttt{freezedetect} introdotto nella versione 4.2 (agosto 2019).\cite{ffmpeg}
+
+Il filtro \texttt{freezedetect} prevede due opzioni:
+
+\begin{itemize}
+	\item \texttt{noise}: indica la soglia di rumore sopra la quale due fotogrammi vengono considerati diversi. Questa soglia può essere specificata in decibel (aggiungendo dB al valore), oppure con un numero decimale nell'intervallo $[0, 1]$. Il valore predefinito è $-60 dB$, equivalente a $0,001$;
+	\item \texttt{duration}: l'intervallo di tempo oltre il quale un fotogramma viene considerato in stato di "freeze", e quindi invariato secondo il parametro \texttt{noise}. Il valore predefinito è 2 secondi.
+\end{itemize}
+
+Il comando che segue configura il filtro \texttt{freezedetect} con una soglia di rumore pari a $0,01$ e una durata minima di 5 secondi. Questi parametri sono stati ricavati empiricamente utilizzando come input dei video catturati durante reali lezioni universitarie. L'intervallo di 5 secondi è in particolare pensato per evitare che cambi momentanei della schermata vengano considerati rilevanti.
+
+\begin{minted}{bash}
+> ffmpeg -i input.mp4 \
+         -vf "freezedetect=noise=0.01:duration=5,metadata=print:file=log.txt" \
+         -an -f null -
+\end{minted}
+
+Nel comando si può notare che oltre a \texttt{freezedetect} viene applicato un secondo filtro chiamato \texttt{metadata}. Questo filtro si occupa di leggere i valori prodotti dal filtro \texttt{freezedetect} e di scriverli in un file chiamato \texttt{log.txt}.
+
+I metadati prodotti sono identificati da tre chiavi, in particolare:
+
+\begin{itemize}
+	\item \texttt{lavfi.freezedetect.freeze\_start}: indica il \emph{timestamp} del primo fotogramma in cui è stato individuato il freeze (inclusi i primi secondi di \texttt{duration});
+	\item \texttt{lavfi.freezedetect.freeze\_duration}: indica in secondi l'intervallo totale durante il quale il fotogramma è rimasto invariato;
+	\item \texttt{lavfi.freezedetect.freeze\_end}: indica il \emph{timestamp} dell'ultimo fotogramma dell'intervallo.
+\end{itemize}
+
+Dopo aver eseguito il comando, il file \texttt{log.txt} conterrà i dati raccolti. Nell'esempio che segue sono state rilevate 3 istantanee, ai secondi 0, 132 e 200.
+
+\begin{figure}[H]
+\begin{minted}[highlightlines={2,7,12}]{text}
+frame:192  pts:451200  pts_time:5.01333
+lavfi.freezedetect.freeze_start=0
+frame:5416 pts:11594764 pts_time:128.831
+lavfi.freezedetect.freeze_duration=128.831
+lavfi.freezedetect.freeze_end=128.831
+frame:5764 pts:12334264 pts_time:137.047
+lavfi.freezedetect.freeze_start=132.031
+frame:8439 pts:18041731 pts_time:200.464
+lavfi.freezedetect.freeze_duration=68.433
+lavfi.freezedetect.freeze_end=200.464
+frame:8648 pts:18493226 pts_time:205.48
+lavfi.freezedetect.freeze_start=200.464
+\end{minted}
+\caption{Contenuto del file di output \texttt{log.txt}.}
+\label{fig:diff_freezeout}
+\end{figure}
+
+Se si vogliono ora estrarre i fotogrammi individuati, ci sono due strade. La prima è quella di ritagliare più volte i primi N secondi del video (con \texttt{-ss N}) e poi estrarre il primo fotogramma immediatamente successivo (\texttt{-frames:v 1}):
+
+\begin{minted}{bash}
+> ffmpeg -ss 1 -i input.mp4 \
+         -ss 133 -i input.mp4 \
+         -ss 201 -i input.mp4 \
+         -map 0:v -frames:v 1 out1.png \
+         -map 1:v -frames:v 1 out2.png \
+         -map 2:v -frames:v 1 out3.png -y
+\end{minted}
+
+Si osservi che l'offset in secondi è stato incrementato di uno e arrotondato per difetto, in modo da evitare eventuali artefatti di codifica dovuti al cambio di scena.
+
+La soluzione precedente ha lo svantaggio di caricare più volte il file in parallelo, causando un uso di memoria RAM molto elevato nel caso in cui i fotogrammi da estrarre siano tanti (più di qualche decina).
+
+L'alternativa è quindi usare il filtro \texttt{select}, che permette di selezionare solo determinati fotogrammi dall'input e di passarli all'output. Questo metodo fa un uso molto limitato di memoria ma è anche molto più lento, perché non sfrutta la funzionalità di seeking rapido offerta dall'opzione \texttt{-ss}.
+
+Sono inoltre richiesti gli indici dei fotogrammi, anziché i relativi \emph{timestamp}, che vanno quindi estratti dall'output mostrato nella figura \ref{fig:diff_freezeout}. In compenso non è però necessario aggiungere un offset ai valori, perché gli indici dei fotogrammi sono già relativi a un momento successivo di 5 secondi rispetto all'inizio del freeze.
+
+\begin{minted}{bash}
+> ffmpeg -i input.mp4
+         -vf "select='eq(n,192)+eq(n,5764)+eq(n,8648)'"
+         -vsync 0 %d.png
+\end{minted}
+
+In questo caso c'è da notare l'aggiunta dell'opzione \texttt{-vsync 0}, che ha lo scopo di disabilitare la duplicazione dei fotogrammi che viene normalmente applicata per simulare un framerate costante.
+
+A questo punto un possibile uso dei file generati è la generazione di un mosaico, con la possibilità di configurare la dimensione delle singole immagini e il numero di colonne e righe della griglia:
+
+\begin{minted}{bash}
+> ffmpeg -i %d.png -vf "scale=200:-1,tile=5x3"
+         -frames:v 1 tile.png -y
+\end{minted}
 
