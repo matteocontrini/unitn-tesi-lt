@@ -3,7 +3,7 @@
 
 La libreria \texttt{MobileFFmpeg} permette di eseguire istanze di \texttt{ffmpeg} su dispositivi Android, rendendo trasparente la gestione del loro ciclo di vita.
 
-Come dettagliatamente indicato dalla documentazione\footnotemark{}, esistono 8 varianti della libreria, a seconda delle librerie incluse (\texttt{min}, \texttt{min-gpl}, \texttt{https}, \texttt{https-gpl}, \texttt{audio}, \texttt{video}, \texttt{full}, \texttt{full-gpl}). Essendo interessati soltanto all'acquisizione di un flusso raw tramite il protocollo RTSP, la versione \texttt{min} è sufficiente.
+Come dettagliatamente indicato dalla documentazione\footnotemark{}, esistono 8 varianti della libreria, a seconda delle librerie incluse (\texttt{min}, \texttt{min-gpl}, \texttt{https}, \texttt{https-gpl}, \texttt{audio}, \texttt{video}, \texttt{full}, \texttt{full-gpl}). Essendo interessati soltanto all'acquisizione di un flusso tramite il protocollo RTSP, la versione \texttt{min} è sufficiente.
 
 \footnotetext{\url{https://github.com/tanersener/mobile-ffmpeg/wiki/Packages}}
 
@@ -50,7 +50,7 @@ Un punto da precisare è che questa libreria non consente l'esecuzione di istanz
 \chapter{Acquisizione audio PCM}
 \label{cha:allegato_pcm}
 
-Il blocco di codice che segue configura e avvia l'acquisizione della sorgente audio di default del dispositivo, impostando come formato PCM 16bit a $44,1 kHz$ e un canale.
+Il blocco di codice che segue configura e avvia l'acquisizione della sorgente audio di default del dispositivo, impostando come formato PCM 16bit a un canale con frequenza di campionamento $44,1 kHz$.
 
 \begin{minted}[xleftmargin=\parindent,linenos]{java}
 final int SAMPLING_RATE_IN_HZ = 44100;
@@ -72,7 +72,7 @@ recorder.startRecording();
 isRecording = true;
 \end{minted}
 
-L'acquisizione vera e propria dei campioni audio avviene però in un thread separato, in cui vengono caricati i dati audio in un buffer, a ciclo continuo. Un particolare da notare è che il tipo dell'array buffer è \texttt{short[]}, perché deve contenere l'ampiezza del segnale a 16 bit.
+L'acquisizione vera e propria dei campioni audio avviene però in un thread separato, in cui vengono caricati i dati audio in un buffer, a ciclo continuo. Un particolare da notare è che il tipo del buffer è \texttt{short[]}, perché deve contenere l'ampiezza del segnale a 16 bit.
 
 Nel momento in cui il buffer deve essere scritto su file (metodo \texttt{writeShortArrayToFile}), viene però effettuata una conversione in byte, assicurandosi di usare l'ordine dei byte "little endian", il più comune nell'ambito dell'audio PCM.
 
