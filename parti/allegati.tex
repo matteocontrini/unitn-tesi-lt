@@ -1,7 +1,51 @@
 \chapter{La libreria \texttt{MobileFFmpeg}}
 \label{cha:allegato_ffmpeg}
 
-Lorem ipsum dolor sit amet.
+La libreria \texttt{MobileFFmpeg} permette di eseguire istanze di \texttt{ffmpeg} su dispositivi Android, rendendo trasparente la gestione del loro ciclo di vita.
+
+Come dettagliatamente indicato dalla documentazione\footnotemark{}, esistono 8 varianti della libreria, a seconda delle librerie incluse (\texttt{min}, \texttt{min-gpl}, \texttt{https}, \texttt{https-gpl}, \texttt{audio}, \texttt{video}, \texttt{full}, \texttt{full-gpl}). Essendo interessati soltanto all'acquisizione di un flusso raw tramite il protocollo RTSP, la versione \texttt{min} è sufficiente.
+
+\footnotetext{\url{https://github.com/tanersener/mobile-ffmpeg/wiki/Packages}}
+
+Il pacchetto può essere configurato per l'installazione modificando il file \texttt{build.gradle} del modulo dell'applicazione, aggiungendo una nuova riga all'interno del blocco \texttt{dependencies}.
+
+\begin{minted}{text}
+dependencies {
+    implementation com.arthenica:mobile-ffmpeg-min:4.2.LTS
+}
+\end{minted}
+
+In questo caso è stata scelta la versione \texttt{LTS}, in modo da supportare versioni di Android inferiori a 7.0.\footnote{\url{https://github.com/tanersener/mobile-ffmpeg/wiki/LTS-Releases}}
+
+Il comando della sezione \ref{sec:rtsp_ffmpeg} può essere a questo punto acquisito come segue:
+
+\begin{minted}{java}
+String command = "-i rtsp://admin:admin@192.168.178.30:88/videoMain " +
+                 "-c:v copy -an /sdcard/out.ts -y";
+                 
+FFmpeg.execute(command);
+\end{minted}
+
+Il metodo \texttt{execute} è bloccante, e ritorna solo quando il relativo processo \texttt{ffmpeg} termina, per cui deve essere eseguito all'interno di un thread. L'acquisizione può essere poi manualmente terminata in modo "gentile" chiamando \texttt{FFmpeg.cancel()}.
+
+Per monitorare l'esecuzione di \texttt{ffmpeg}, la libreria mette a disposizione la possibilità di registrare due callback, una per ricevere l'output del processo e una per le statistiche "parsate":
+
+\begin{minted}{java}
+Config.enableLogCallback(new LogCallback() {
+    public void apply(LogMessage message) {
+        String text = message.getText();
+    }
+});
+
+Config.enableStatisticsCallback(new StatisticsCallback() {
+    public void apply(Statistics stats) {
+        // getVideoFrameNumber(), getVideoFps(), getSize(),
+        // getTime(), getBitrate(), getSpeed()
+    }
+});
+\end{minted}
+
+Un punto da precisare è che questa libreria non consente l'esecuzione di istanze multiple di \texttt{ffmpeg}, ma esistono delle alternative\footnote{\url{https://github.com/bravobit/FFmpeg-Android}} (non sperimentate) che permettono di farlo usando un approccio implementativo diverso.
 
 \chapter{Acquisizione audio PCM}
 \label{cha:allegato_pcm}
