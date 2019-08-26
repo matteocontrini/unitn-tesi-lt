@@ -107,13 +107,13 @@ Per completezza, l'overscan può essere disabilitato con questo comando:
 
 In aggiunta ai metodi illustrati nei capitoli precedenti, Android fornisce a partire dalla versione 5.0 una modalità chiamata \emph{lock task}, che fa parte di un insieme più ampio di API per la realizzazione di dispositivi dedicati (in passato chiamati COSU, Corporate-Owned Single-Use). Queste API fanno a loro volta parte di Android Enterprise, che propone soluzioni specifiche per casi d'uso aziendali.
 
-Quando la modalità lock task viene abilitata, il sistema operativo entra in una modalità rigida che permette di usare solo un insieme di applicazioni definite manualmente tramite una \emph{whitelist}. Inoltre, la barra di stato viene disabilitata (figura \ref{fig:kiosk_locktask}), le notifiche sono soppresse, e l'utilizzatore non può navigare nel sistema al di fuori delle app inserite in whitelist.\footnote{\url{https://developer.android.com/work/dpc/dedicated-devices/lock-task-mode}}
+Quando la modalità lock task viene abilitata, il sistema operativo entra in una modalità rigida che permette di usare solo un insieme di applicazioni definite manualmente tramite una \emph{whitelist}. Inoltre, la barra di stato viene disabilitata, le notifiche sono soppresse, e l'utilizzatore non può navigare nel sistema al di fuori delle app inserite in whitelist.\footnote{\url{https://developer.android.com/work/dpc/dedicated-devices/lock-task-mode}}
 
 \begin{figure}[h]
-	\hl{aggiungere immagine lock task mode}
-	\vspace{7cm}
+	\centering
+	\includegraphics[width=0.8\textwidth]{res/locktask.png}
 	
-	\caption{Lock task mode}
+	\caption{In modalità lock task la barra di stato e di navigazione sono disabilitate.}
 	\label{fig:kiosk_locktask}
 \end{figure}
 
