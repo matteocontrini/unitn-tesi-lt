@@ -8,7 +8,7 @@ Lorem ipsum dolor sit amet.
 
 Il blocco di codice che segue configura e avvia l'acquisizione della sorgente audio di default del dispositivo, impostando come formato PCM 16bit a $44,1 kHz$ e un canale.
 
-\begin{minted}{java}
+\begin{minted}[xleftmargin=\parindent,linenos]{java}
 final int SAMPLING_RATE_IN_HZ = 44100;
 final int CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO;
 final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
@@ -25,36 +25,54 @@ AudioRecord recorder = new AudioRecord(
     BUFFER_SIZE);
 
 recorder.startRecording();
+isRecording = true;
 \end{minted}
 
-L'acquisizione vera e propria dei campioni audio avviene però in un thread separato.
+L'acquisizione vera e propria dei campioni audio avviene però in un thread separato, in cui vengono caricati i dati audio in un buffer, a ciclo continuo. Un particolare da notare è che il tipo dell'array buffer è \texttt{short[]}, perché deve contenere l'ampiezza del segnale a 16 bit.
 
-\begin{minted}{java}
+Nel momento in cui il buffer deve essere scritto su file (metodo \texttt{writeShortArrayToFile}), viene però effettuata una conversione in byte, assicurandosi di usare l'ordine dei byte "little endian", il più comune nell'ambito dell'audio PCM.
+
+\begin{minted}[xleftmargin=\parindent,linenos]{java}
 Thread recordingThread = new Thread(new RecordingRunnable(), "RecordingThread");
 recordingThread.start();
 \end{minted}
 
-\begin{minted}{java}
+\begin{minted}[xleftmargin=\parindent,linenos]{java}
 class RecordingRunnable implements Runnable {
-@Override
-public void run() {
-final File file = new File(Environment.getExternalStorageDirectory(), "/audio/" + System.currentTimeMillis() + ".pcm");
+    @Override
+    public void run() {
+        final File file = new File("/sdcard/audio/test.pcm");
 
-short[] buffer = new short[BUFFER_SIZE];
+        short[] buffer = new short[BUFFER_SIZE];
 
-try (final FileOutputStream outStream = new FileOutputStream(file)) {
-while (recordingInProgress.get()) {
-int readSize = recorder.read(buffer, 0, buffer.length);
+        try (final FileOutputStream outStream = new FileOutputStream(file)) {
+            while (isRecording) {
+                int readSize = recorder.read(buffer, 0, buffer.length);
 
-if (readSize < 0) {
-throw new RuntimeException("Reading of audio buffer failed: " + getBufferReadFailureReason(readSize));
-}
+                if (readSize < 0) {
+                    throw new RuntimeException("Reading of audio buffer failed");
+                }
 
-writeShortArrayToFile(buffer, outStream, readSize);
-}
+                writeShortArrayToFile(buffer, outStream, readSize);
+            }
 
-outStream.close();
-}
+            outStream.close();
+        }
+    }
+    
+    private void writeShortArrayToFile(short[] buffer,
+                                       FileOutputStream outStream,
+                                       int readSize) {
+        try {
+            ByteBuffer bb = ByteBuffer.allocate(Short.SIZE / Byte.SIZE * readSize);
+            bb.order(ByteOrder.LITTLE_ENDIAN);
+            ShortBuffer ss = bb.asShortBuffer();
+            ss.put(buffer, 0, readSize);
+            outStream.write(bb.array(), 0, bb.limit());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
 \end{minted}
 
