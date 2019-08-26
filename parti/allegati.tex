@@ -72,9 +72,11 @@ recorder.startRecording();
 isRecording = true;
 \end{minted}
 
-L'acquisizione vera e propria dei campioni audio avviene però in un thread separato, in cui vengono caricati i dati audio in un buffer, a ciclo continuo. Un particolare da notare è che il tipo del buffer è \texttt{short[]}, perché deve contenere l'ampiezza del segnale a 16 bit.
+L'acquisizione vera e propria dei campioni audio avviene però in un thread separato, in cui vengono caricati i dati audio in un buffer, a ciclo continuo. Un particolare da notare è che il tipo del buffer è \texttt{short[]}, perché deve contenere i valori dell'ampiezza del segnale a 16 bit.
 
-Nel momento in cui il buffer deve essere scritto su file (metodo \texttt{writeShortArrayToFile}), viene però effettuata una conversione in byte, assicurandosi di usare l'ordine dei byte "little endian", il più comune nell'ambito dell'audio PCM.
+Questi valori possono poi essere elaborati per ricavare una media e calcolare misure come il livello di pressione sonora o la "loudness" in LUFS, secondo la raccomandazione EBU R128\footnote{\url{https://tech.ebu.ch/docs/r/r128.pdf}}.
+
+Nel momento in cui il buffer viene scritto su file (metodo \texttt{writeShortArrayToFile}), deve essere però effettuata la conversione in byte, assicurandosi di usare l'ordine dei byte "little endian", il più comune nell'ambito dell'audio PCM.
 
 \begin{minted}[xleftmargin=\parindent,linenos]{java}
 Thread recordingThread = new Thread(new RecordingRunnable(), "RecordingThread");
