@@ -1,4 +1,4 @@
-\needspace{10\baselineskip}
+\needspace{15\baselineskip}
 \chapter{Acquisizione video RTSP}
 \label{cha:rtsp}
 
@@ -7,7 +7,7 @@ Come anticipato, il sistema LODE prevede la possibilità di registrare con una v
 \section{Il protocollo RTSP}
 \label{sec:rtsp_protocollo}
 
-RTSP (Real Time Streaming Protocol) è un protocollo di rete per il controllo di flussi multimediali. Si dice che è \emph{di controllo} perché non è usato per lo scambio di dati multimediali, ma di messaggi con lo scopo di richiedere determinate operazioni al server. Per fare qualche esempio, è possibile ottenere informazioni sui flussi disponibili, riprodurre un flusso specifico o metterlo in pausa.\cite{rfc2326}
+RTSP (Real Time Streaming Protocol) è un protocollo di rete per il controllo di flussi multimediali. Si dice che è \emph{di controllo} perché non è usato per lo scambio di dati multimediali, ma di messaggi con lo scopo di richiedere determinate operazioni al server. Per fare qualche esempio, è possibile ottenere informazioni sui flussi disponibili, riprodurre un flusso specifico o metterlo in pausa \cite{rfc2326}.
 
 Il trasferimento vero e proprio dei dati multimediali avviene invece tramite RTP (Real-time Transport Protocol), un protocollo progettato per consentire il trasporto in tempo reale di contenuti video e audio. Le implementazioni di RTP sono tipicamente basate su UDP\footnote{User Datagram Protocol}, protocollo di livello trasporto non connesso e non affidabile particolarmente adatto per situazioni in cui la latenza è più importante dell'affidabilità, ma spesso offrono compatibilità anche con TCP\footnote{Transmission Control Protocol}.
 

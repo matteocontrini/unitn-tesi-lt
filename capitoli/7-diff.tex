@@ -11,11 +11,11 @@ Per evitare che richieste di screenshot molto vicine provochino inutili upload d
 
 Prima di iniziare a lavorare sul confronto delle immagini, è opportuno familiarizzare con il formato YUV420SP, che si incontra frequentemente nello sviluppo Android con il nome di NV12 o NV21.
 
-Prima di tutto, YUV420 è un termine approssimativo per riferirsi a Y'CbCr 4:2:0, un formato di pixel appartenente alla famiglia Y'CbCr, in cui il colore di un pixel è scomposto nelle componenti Y' (luminanza, scala di grigi\footnotemark{}), Cb/U (proiezione del blu) e Cr/V (proiezione del rosso).\cite{yuv}
+Prima di tutto, YUV420 è un termine approssimativo per riferirsi a Y'CbCr 4:2:0 \cite{yuv}, un formato di pixel appartenente alla famiglia Y'CbCr, in cui il colore di un pixel è scomposto nelle componenti Y' (luminanza, scala di grigi\footnotemark{}), Cb/U (proiezione del blu) e Cr/V (proiezione del rosso).
 
 \footnotetext{La suddivisione delle componenti in Y, U e V deriva dal mondo analogico, quando c'era la necessità di supportare sia tv in bianco e nero che a colori. Avere una componente in scala di grigi isolata permette infatti di mantenere la retrocompatibilità pur introducendo il colore. In ambito digitale, è più corretto usare il termine Y'CbCr anziché YUV.}
 
-Questa divisione permette di applicare una tecnica chiamata sottocampionamento della crominanza, che riduce la risoluzione delle due componenti della crominanza (Cb e Cr), lasciando a piena risoluzione la luminanza. Questa tecnica è fondata sul fatto che l'occhio umano è molto più sensibile all'intensità di luce che al colore (figura \ref{fig:diff_mit}), per cui anche se riduciamo i "bit" per la rappresentazione della crominanza la differenza è nella gran parte dei casi quasi impercettibile.\cite{luminance} La grandissima maggioranza dei video normalmente fruibili tramite Internet o la televisione digitale sono codificati con un formato dei pixel Y'CbCr 4:2:0, che è il più diffuso in ambiti non professionali.
+Questa divisione permette di applicare una tecnica chiamata sottocampionamento della crominanza, che riduce la risoluzione delle due componenti della crominanza (Cb e Cr), lasciando a piena risoluzione la luminanza. Questa tecnica è fondata sul fatto che l'occhio umano è molto più sensibile all'intensità di luce che al colore (figura \ref{fig:diff_mit}), per cui anche se riduciamo i "bit" per la rappresentazione della crominanza la differenza è nella gran parte dei casi quasi impercettibile \cite{luminance}. La grandissima maggioranza dei video normalmente fruibili tramite Internet o la televisione digitale sono codificati con un formato dei pixel Y'CbCr 4:2:0, che è il più diffuso in ambiti non professionali.
 
 % https://twitter.com/AkiyoshiKitaoka/status/1028473566193315841
 
@@ -52,7 +52,7 @@ La figura \ref{fig:diff_yuv420} mostra il sottocampionamento della crominanza 4:
 	\label{fig:diff_yuv420}
 \end{figure}
 
-Nel momento in cui YUV420 deve essere rappresentato sotto forma di bit, i tre piani (Y, U e V) vengono isolati. Ad esempio, un pixel verrebbe rappresentato così (ogni lettera è un bit)\footnote{\url{https://wiki.videolan.org/YUV}}:
+Nel momento in cui YUV420 deve essere rappresentato sotto forma di bit, i tre piani (Y, U e V) vengono isolati. Ad esempio, un pixel verrebbe rappresentato così (ogni lettera è un bit) \cite{vlc}:
 
 \definecolor{ChromaBlue}{HTML}{1160c6}
 \definecolor{ChromaRed}{HTML}{E60000}
@@ -242,16 +242,14 @@ La strategia del primo punto è stata sperimentata su diversi contenuti e ha dat
 
 Nei test effettuati il numero di colonne e righe della griglia veniva scelto in modo casuale ad ogni controllo, scegliendo rispettivamente dall'intervallo $[10, 20]$ e $[60, 80]$. Con questi dati, nel peggiore dei casi il numero di pixel/byte da verificare è $1\,600$, un valore estremamente limitato se confrontato con i 3 milioni di byte della sezione \ref{sec:diff_full}. Le prestazioni di questa soluzione sono risultate di conseguenza molto buone, con un tempo di confronto limitato a pochi millisecondi. \hl{recuperare dati precisi}
 
-\hl{long polling?}
-
 \section{Estrazione slide in post-elaborazione}
 \label{sec:diff_postprod}
 
 Un'altra possibile applicazione del rilevamento delle differenze è l'estrazione di "istantanee" del video registrato in fase di post-elaborazione. I fotogrammi estratti potrebbe poi essere utilizzati come indici legati a punti specifici del video, consentendo di costruire funzionalità come il salto preciso a una slide specifica, oppure in generale come anteprime rappresentative del video.
 
-Per estrarre tutti i fotogrammi "unici" da un video ci viene ancora una volta in aiuto \texttt{ffmpeg}, in particolare con un filtro chiamato \texttt{freezedetect} introdotto nella versione 4.2 (agosto 2019).\cite{ffmpeg}
+Per estrarre tutti i fotogrammi "unici" da un video ci viene ancora una volta in aiuto \texttt{ffmpeg}, in particolare con un filtro chiamato \texttt{freezedetect} introdotto nella versione 4.2 (agosto 2019).
 
-Il filtro \texttt{freezedetect} prevede due opzioni:
+Il filtro \texttt{freezedetect} prevede due opzioni \cite{ffmpeg}:
 
 \begin{itemize}
 	\item \texttt{noise}: indica la soglia di rumore sopra la quale due fotogrammi vengono considerati diversi. Questa soglia può essere specificata in decibel (aggiungendo dB al valore), oppure con un numero decimale nell'intervallo $[0, 1]$. Il valore predefinito è $-60 dB$, equivalente a $0,001$;

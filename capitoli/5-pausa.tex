@@ -9,7 +9,7 @@ A partire da Android 7.0, \texttt{MediaRecorder} espone i metodi \texttt{pause()
 
 Una alternativa è quindi quella di interrompere la registrazione in corrispondenza della pausa, per poi avviarne una nuova per riprendere la registrazione. Per quanto riguarda il \texttt{MediaRecorder} questo si traduce nei metodi \texttt{stop()} e \texttt{start()}, mentre per \texttt{ffmpeg} nella chiusura del processo e l'avvio di uno nuovo.
 
-Alla fine si avranno diversi file corrispondenti agli spezzoni registrati, che possono essere rapidamente uniti ad esempio utilizzando \texttt{ffmpeg}. Nel caso in cui i video siano file MP4, l'unione dei file si può ottenere utilizzando il demuxer chiamato \texttt{concat}, che permette di simulare un input di \texttt{ffmpeg} come se si trattasse di un file unico concatenato.\cite{ffmpeg} Si deve innanzitutto creare un file \texttt{list.txt} contenente i percorsi ai segmenti da unire:
+Alla fine si avranno diversi file corrispondenti agli spezzoni registrati, che possono essere rapidamente uniti ad esempio utilizzando \texttt{ffmpeg}. Nel caso in cui i video siano file MP4, l'unione dei file si può ottenere utilizzando il demuxer chiamato \texttt{concat} \cite{ffmpeg}, che permette di simulare un input di \texttt{ffmpeg} come se si trattasse di un file unico concatenato. Si deve innanzitutto creare un file \texttt{list.txt} contenente i percorsi ai segmenti da unire:
 
 \begin{minted}{bash}
 > cat list.txt
@@ -57,7 +57,7 @@ Il comando seguente sfrutta le catene di filtri di \texttt{ffmpeg} per ottenere 
 
 Ciascuna catena di filtri, separata da un punto e virgola, prende in input una traccia, la elabora con una serie di filtri, e produce un output. Nello specifico, alla riga 3 viene presa come sorgente la traccia video del primo input (\texttt{[0:v]}), vengono applicati i filtri \texttt{trim} (per ritagliare una porzione del video) e \texttt{setpts} (per sistemare i timestamp\footnotemark{}), e infine il risultato viene etichettato come \texttt{[0v]}. La stessa sequenza di operazioni viene ripetuta una seconda volta per ritagliare il secondo segmento di video ed etichettarlo con \texttt{[1v]}.
 
-La catena successiva (riga 5) considera i due segmenti etichettati \texttt{[0v]} e \texttt{[1v]} e applica il filtro \texttt{concat}, che concatena i due segmenti specificando anche numero di tracce video e audio. La traccia video risultante viene quindi selezionata come traccia del file di output (riga 6), e seguono infine alcuni parametri di codifica per x264.\cite{ozer}
+La catena successiva (riga 5) considera i due segmenti etichettati \texttt{[0v]} e \texttt{[1v]} e applica il filtro \texttt{concat}, che concatena i due segmenti specificando anche numero di tracce video e audio. La traccia video risultante viene quindi selezionata come traccia del file di output (riga 6), e seguono infine alcuni parametri di codifica per l'encoder \texttt{x264} \cite{ozer}.
 
 \footnotetext{La sigla \texttt{PTS} sta per \emph{presentation timestamp} e indica l'istante temporale in cui un fotogramma deve essere mostrato. Il filtro \texttt{trim} non modifica il timestamp dei fotogrammi tagliati, per cui senza il filtro \texttt{setpts} l'output non sarebbe quello desiderato.}
 

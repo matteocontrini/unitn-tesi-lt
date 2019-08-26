@@ -23,7 +23,35 @@ La cattura di un singolo screenshot si può invece ottenere tramite il metodo \t
 
 Questo metodo presenta però un possibile effetto collaterale, riscontrato durante i test, ossia la possibilità che alla cattura di un fotogramma l'anteprima del video su schermo venga interrotta. Durante lo sviluppo si è quindi optato per una modalità alternativa per l'acquisizione degli screenshot: è possibile infatti aggiungere una callback alla \texttt{Camera} tramite il metodo \texttt{setPreviewCallback}, e ricevere così a flusso continuo una copia di ogni fotogramma in formato non compresso\footnote{Si tratta in realtà del formato NV21, cioè una variante di Android di Y'CbCr 4:2:0, una codifica del colore lossy anche se con una perdita di dettaglio solitamente impercettibile. Il formato è approfondito nella sezione \ref{sec:diff_yuv}.}.
 
-Sorge a questo punto un altro problema, cioè la necessità di convertire l'immagine in formato JPEG, per permettere l'upload dello screenshot sul server. La piattaforma Android offre una classe \texttt{YuvImage} con un metodo \texttt{compressToJpeg(...)}, che soffre però di un memory leak che porta dopo qualche minuto al crash dell'applicazione\footnote{\url{https://codar.club/blogs/android-system-api-yuvimage-compresstojpeg-has-a-memory-leak-at-the-native-level.html}}, come verificato nei test svolti. Il bug è stato risolto solo in Android 9.0\footnote{Il commit del fix è disponibile qua: \url{https://android.googlesource.com/platform/frameworks/base/+/1c3ded3}}, rendendo quindi necessaria un'alternativa. Si è optato per una soluzione che prevede la conversione in modo ottimizzato dal formato "non compresso" (NV21) a \texttt{Bitmap}\footnote{Libreria \texttt{easyRS}: \url{https://github.com/silvaren/easyrs}}, e successivamente in JPEG tramite il metodo \texttt{compress(...)} offerto da \texttt{Bitmap} (che non soffre di memory leak). Nonostante il numero di passaggi, il risultato si è rivelato molto soddisfacente dal punto di vista delle prestazioni.
+Sorge a questo punto un altro problema, cioè la necessità di convertire l'immagine in formato JPEG, per permettere l'upload dello screenshot sul server. La piattaforma Android offre una classe \texttt{YuvImage} con un metodo \texttt{compressToJpeg(...)}, che soffre però di un memory leak che porta dopo qualche minuto al crash dell'applicazione \cite{memoryleak}, come verificato nei test svolti. Il bug è stato risolto solo in Android 9.0\footnote{Il commit del fix è disponibile qua: \url{https://android.googlesource.com/platform/frameworks/base/+/1c3ded3}}, rendendo quindi necessaria un'alternativa. Si è optato per una soluzione che prevede la conversione in modo ottimizzato dal formato "non compresso" (NV21) a \texttt{Bitmap}\footnote{Libreria \texttt{easyRS}: \url{https://github.com/silvaren/easyrs}}, e successivamente in JPEG tramite il metodo \texttt{compress(...)} offerto da \texttt{Bitmap} (che non soffre di memory leak). Nonostante il numero di passaggi, il risultato si è rivelato soddisfacente dal punto di vista delle prestazioni, con una media di tempo di compressione tra i 450 e i 500 millisecondi.
+
+%08-26 09:37:17.664 14280-14322/eu.txc2.mrbox.box D/ScreenshotTask: Requesting screenshot from HDMIRecorder
+%08-26 09:37:17.768 14280-14322/eu.txc2.mrbox.box D/ScreenshotTask: Converting to Bitmap and then JPEG...
+%08-26 09:37:17.924 14280-14322/eu.txc2.mrbox.box D/NV21: Conversion to Bitmap: 146ms
+%08-26 09:37:18.237 14280-14322/eu.txc2.mrbox.box D/ScreenshotTask: Converted in 469
+%08-26 09:37:18.237 14280-14322/eu.txc2.mrbox.box I/ScreenshotTask: Sending screenshot. JPEG size=51810
+%08-26 09:37:18.335 14280-14322/eu.txc2.mrbox.box I/ScreenshotTask: Screenshot sent
+%
+%08-26 09:38:06.500 14280-14322/eu.txc2.mrbox.box D/ScreenshotTask: Requesting screenshot from HDMIRecorder
+%08-26 09:38:06.581 14280-14322/eu.txc2.mrbox.box D/ScreenshotTask: Converting to Bitmap and then JPEG...
+%08-26 09:38:06.673 14280-14322/eu.txc2.mrbox.box D/NV21: Conversion to Bitmap: 92ms
+%08-26 09:38:07.051 14280-14322/eu.txc2.mrbox.box D/ScreenshotTask: Converted in 470
+%08-26 09:38:07.051 14280-14322/eu.txc2.mrbox.box I/ScreenshotTask: Sending screenshot. JPEG size=51810
+%08-26 09:38:07.117 14280-14322/eu.txc2.mrbox.box I/ScreenshotTask: Screenshot sent
+%
+%08-26 09:41:54.635 14280-14322/eu.txc2.mrbox.box D/ScreenshotTask: Requesting screenshot from HDMIRecorder
+%08-26 09:41:54.708 14280-14322/eu.txc2.mrbox.box D/ScreenshotTask: Converting to Bitmap and then JPEG...
+%08-26 09:41:54.822 14280-14322/eu.txc2.mrbox.box D/NV21: Conversion to Bitmap: 114ms
+%08-26 09:41:55.169 14280-14322/eu.txc2.mrbox.box D/ScreenshotTask: Converted in 461
+%08-26 09:41:55.169 14280-14322/eu.txc2.mrbox.box I/ScreenshotTask: Sending screenshot. JPEG size=112476
+%08-26 09:42:11.806 14280-14322/eu.txc2.mrbox.box I/ScreenshotTask: Screenshot sent
+%
+%08-26 09:47:16.302 15022-15063/eu.txc2.mrbox.box D/ScreenshotTask: Requesting screenshot from HDMIRecorder
+%08-26 09:47:16.409 15022-15063/eu.txc2.mrbox.box D/ScreenshotTask: Converting to Bitmap and then JPEG...
+%08-26 09:47:16.562 15022-15063/eu.txc2.mrbox.box D/NV21: Conversion to Bitmap: 144ms
+%08-26 09:47:16.872 15022-15063/eu.txc2.mrbox.box D/ScreenshotTask: Converted in 463
+%08-26 09:47:16.872 15022-15063/eu.txc2.mrbox.box I/ScreenshotTask: Sending screenshot. JPEG size=112802
+%08-26 09:47:17.004 15022-15063/eu.txc2.mrbox.box I/ScreenshotTask: Screenshot sent
 
 Il seguente estratto di codice mostra la conversione da NV21 a JPEG. La variabile \texttt{context} è l'\texttt{Activity} dell'applicazione, mentre \texttt{data} contiene i dati dell'immagine sorgente. Alla riga 4 è possibile configurare la qualità dell'immagine JPEG prodotta (in questo caso 80 su 100).
 
@@ -40,9 +68,9 @@ boolean ok = bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
 
 A partire da Android 5.0, un nuovo insieme di classi permette una gestione più avanzata della fotocamera. L'equivalente della classe \texttt{Camera} è \texttt{CameraDevice}, che però non espone più i metodi visti nella sezione precedente.
 
-Viene introdotto invece il concetto di pipeline, cioè flussi paralleli forniti dal sistema operativo per diversi scopi. Ad esempio, la pipeline di "preview" fornisce un flusso con latenza molto bassa ma trascurando leggermente la qualità dell'immagine. La pipeline per le foto fornisce un'immagine ad alta qualità, mentre la pipeline per la registrazione video offre qualità dell'immagine e scansione costante dei fotogrammi in uscita.\footnote{\emph{Build a universal camera app (Google I/O '18)} \url{https://youtu.be/d1gLZCSLmaA}}
+Viene introdotto invece il concetto di pipeline, cioè flussi paralleli forniti dal sistema operativo per diversi scopi. Ad esempio, la pipeline di "preview" fornisce un flusso con latenza molto bassa ma trascurando leggermente la qualità dell'immagine. La pipeline per le foto fornisce un'immagine ad alta qualità, mentre la pipeline per la registrazione video offre qualità dell'immagine e scansione costante dei fotogrammi in uscita \cite{googleio}.
 
-Ottenuto il \texttt{CameraDevice}, la prima operazione da eseguire è creare una sessione di cattura, alla quale vanno collegati i \emph{target} di acquisizione (metodo \texttt{createCaptureSession(...)}). Android utilizza questi target per configurare le pipeline interne e allocare i buffer necessari per la produzione dei fotogrammi.\cite{camera2} I target possono essere \texttt{SurfaceView}, oppure istanze di \texttt{ImageReader}, che ricevono i fotogrammi singoli. La sessione creata è immutabile, e cioè non è possibile modificarne i target se non creandone una nuova.
+Ottenuto il \texttt{CameraDevice}, la prima operazione da eseguire è creare una sessione di cattura, alla quale vanno collegati i \emph{target} di acquisizione (metodo \texttt{createCaptureSession(...)}). Android utilizza questi target per configurare le pipeline interne e allocare i buffer necessari per la produzione dei fotogrammi \cite{camera2}. I target possono essere \texttt{SurfaceView}, oppure istanze di \texttt{ImageReader}, che ricevono i fotogrammi singoli. La sessione creata è immutabile, e cioè non è possibile modificarne i target se non creandone una nuova.
 
 Una volta configurata la sessione, il metodo \texttt{createCaptureRequest(int)} esposto dalla classe \texttt{CameraDevice} permette di inviare una richiesta di cattura alla fotocamera. Questo meccanismo permette di catturare in qualsiasi istante un fotogramma, che avrà caratteristiche diverse a seconda della pipeline scelta come parametro (per esempio \texttt{TEMPLATE\_PREVIEW}, \texttt{TEMPLATE\_STILL\_CAPTURE}, \texttt{TEMPLATE\_RECORD}, ecc.).
 
