@@ -1,4 +1,3 @@
-\needspace{10\baselineskip}
 \chapter{Rilevamento delle differenze tra fotogrammi}
 \label{cha:diff}
 
@@ -240,7 +239,7 @@ Si possono quindi considerare delle strategie alternative che permettono di aggi
 
 La strategia del primo punto è stata sperimentata su diversi contenuti e ha dato ottimi risultati. Gran parte dei cambiamenti venivano rilevati al primo controllo, e in ogni caso entro 3-4 controlli. Nei test l'intervallo di verifica delle differenze era 500 millisecondi, per cui il ritardo massimo di rilevamento risultava di circa 2 secondi.
 
-Nei test effettuati il numero di colonne e righe della griglia veniva scelto in modo casuale ad ogni controllo, scegliendo rispettivamente dall'intervallo $[10, 20]$ e $[60, 80]$. Con questi dati, nel peggiore dei casi il numero di pixel/byte da verificare è $1\,600$, un valore estremamente limitato se confrontato con i 3 milioni di byte della sezione \ref{sec:diff_full}. Le prestazioni di questa soluzione sono risultate di conseguenza molto buone, con un tempo di confronto limitato a pochi millisecondi. \hl{recuperare dati precisi}
+Nei test effettuati il numero di colonne e righe della griglia veniva scelto in modo casuale ad ogni controllo, scegliendo rispettivamente dall'intervallo $[10, 20]$ e $[60, 80]$. Con questi dati, nel peggiore dei casi il numero di pixel/byte da verificare è $1\,600$, un valore estremamente limitato se confrontato con i 3 milioni di byte della sezione \ref{sec:diff_full}. Le prestazioni di questa soluzione sono risultate di conseguenza ottime, con un tempo di confronto solitamente non superiore a 1-2 millisecondi.
 
 \section{Estrazione slide in post-elaborazione}
 \label{sec:diff_postprod}
