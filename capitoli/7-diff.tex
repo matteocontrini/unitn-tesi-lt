@@ -85,7 +85,7 @@ Di conseguenza, 2 pixel sarebbero rappresentati così, dove ciascuna coppia di U
 	\end{tikzpicture}
 \end{figure}
 
-Il formato YUV420SP è invece una variante di YUV420 \emph{Semi Planar}, che significa che i piani U e V sono interlacciati in un unico piano. Un pixel YUV420SP (NV12) verrebbe quindi rappresentato così:
+Il formato YUV420SP è invece una variante di YUV420 \emph{Semi Planar}, che significa che i piani U e V sono intrecciati in un unico piano. Un pixel YUV420SP (NV12) verrebbe quindi rappresentato così:
 
 \begin{figure}[H]
 	\begin{tikzpicture}
@@ -224,7 +224,7 @@ Ci sono tuttavia altri casi in cui i cambiamenti potrebbero riguardare delle are
 		\end{tikzpicture}
 	\end{subfigure}
 	
-	\caption{Anche in questo caso i punti di intersezione sono 441. Si noti però che l'area puntata dalla freccia presenta delle differenze tra i due fotogrammi che non vengono rilevate. Le immagini sono state gentilmente offerte dal prof. Alberto Montresor.}
+	\caption{Anche in questo caso i punti di intersezione sono 441. Si noti però che l'area puntata dalla freccia presenta delle differenze tra i due fotogrammi che non vengono rilevate. Le immagini sono state gentilmente offerte dal professore Alberto Montresor.}
 	\label{fig:diff_slide2}
 \end{figure}
 
@@ -232,7 +232,7 @@ Si possono quindi considerare delle strategie alternative che permettono di aggi
 
 \begin{itemize}
 	\item il numero di colonne può essere aumentato in modo da rendere la griglia più "fitta" e rilevare non solo aggiunte di frasi ma anche brevi parole o simboli;
-	\item il numero di righe e colonne della griglia può essere ricalcolato ad ogni controllo aggiungendo un fattore di casualità. Se un controllo non riesce a rilevare differenze, la volta successiva potrebbe invece riuscirci, dato che i pixel campione saranno diversi (con ragionevole sicurezza);
+	\item il numero di righe e colonne della griglia può essere ricalcolato ad ogni controllo aggiungendo un fattore di casualità. Se un controllo non riesce a rilevare differenze, la volta successiva potrebbe invece riuscirci, dato che i pixel campione saranno diversi (con ragionevole probabilità);
 	\item la distanza orizzontale e verticale tra i punti può essere mantenuta costante, ma si può invece aggiungere uno scorrimento graduale verso destra e verso il basso dei punti, in modo da coprire aree diverse ad ogni controllo;
 	\item la strategia di scegliere un numero casuale di righe e colonne può essere resa più intelligente, per evitare che la stessa coordinata orizzontale e/o verticale venga considerata in diverse combinazioni della griglia.
 \end{itemize}
@@ -244,7 +244,7 @@ Nei test effettuati il numero di colonne e righe della griglia veniva scelto in 
 \section{Estrazione slide in post-elaborazione}
 \label{sec:diff_postprod}
 
-Un'altra possibile applicazione del rilevamento delle differenze è l'estrazione di "istantanee" del video registrato in fase di post-elaborazione. I fotogrammi estratti potrebbe poi essere utilizzati come indici legati a punti specifici del video, consentendo di costruire funzionalità come il salto preciso a una slide specifica, oppure in generale come anteprime rappresentative del video.
+Un'altra possibile applicazione del rilevamento delle differenze è l'estrazione di "istantanee" dal video registrato, in fase di post-elaborazione. I fotogrammi estratti potrebbe poi essere utilizzati come indici legati a punti specifici del video, consentendo di costruire funzionalità come il salto preciso a una slide, oppure in generale come anteprime rappresentative del video.
 
 Per estrarre tutti i fotogrammi "unici" da un video ci viene ancora una volta in aiuto \texttt{ffmpeg}, in particolare con un filtro chiamato \texttt{freezedetect} introdotto nella versione 4.2 (agosto 2019).
 

@@ -1,11 +1,11 @@
 \chapter{Sospensione della registrazione}
 \label{cha:pausa}
 
-Durante l'acquisizione di una lezione potrebbero esserci dei momenti di pausa in cui la registrazione video e audio deve essere sospesa. La sospensione della registrazione può essere fatta sia durante lo svolgimento della lezione, ad esempio tramite un telecomando, oppure in seguito alla conclusione della lezione in una fase di post-elaborazione.
+Durante l'acquisizione di una lezione potrebbero esserci dei momenti di pausa in cui la registrazione video e audio deve essere sospesa. A seconda dei requisiti, la pausa della registrazione può essere richiesta sia durante lo svolgimento della lezione, ad esempio tramite un telecomando, oppure in seguito alla conclusione della lezione in una fase di post-elaborazione.
 
 Ricordando quanto mostrato nei capitoli \ref{cha:hdmi} e \ref{cha:rtsp}, prendiamo come riferimento la registrazione effettuata con la classe \texttt{MediaRecorder} di Android per l'ingresso HDMI e con \texttt{ffmpeg} per quanto riguarda la videocamera RTSP.
 
-A partire da Android 7.0, \texttt{MediaRecorder} espone i metodi \texttt{pause()} e \texttt{resume()} per mettere in pausa e riprendere la registrazione, comunque producendo un solo file video in uscita. Tuttavia, molte board multimediali non supportano Android 7.0. Si aggiunge inoltre il problema di sospendere anche la cattura \texttt{ffmpeg}.
+A partire da Android 7.0, \texttt{MediaRecorder} espone i metodi \texttt{pause()} e \texttt{resume()} per mettere in pausa e riprendere la registrazione, producendo in ogni caso un solo file video in uscita. Tuttavia, molte board multimediali non supportano Android 7.0. Si aggiunge inoltre il problema di sospendere anche la cattura \texttt{ffmpeg}.
 
 Una alternativa è quindi quella di interrompere la registrazione in corrispondenza della pausa, per poi avviarne una nuova per riprendere la registrazione. Per quanto riguarda il \texttt{MediaRecorder} questo si traduce nei metodi \texttt{stop()} e \texttt{start()}, mentre per \texttt{ffmpeg} nella chiusura del processo e l'avvio di uno nuovo.
 
@@ -57,7 +57,7 @@ Il comando seguente sfrutta le catene di filtri di \texttt{ffmpeg} per ottenere 
 
 Ciascuna catena di filtri, separata da un punto e virgola, prende in input una traccia, la elabora con una serie di filtri, e produce un output. Nello specifico, alla riga 3 viene presa come sorgente la traccia video del primo input (\texttt{[0:v]}), vengono applicati i filtri \texttt{trim} (per ritagliare una porzione del video) e \texttt{setpts} (per sistemare i timestamp\footnotemark{}), e infine il risultato viene etichettato come \texttt{[0v]}. La stessa sequenza di operazioni viene ripetuta una seconda volta per ritagliare il secondo segmento di video ed etichettarlo con \texttt{[1v]}.
 
-La catena successiva (riga 5) considera i due segmenti etichettati \texttt{[0v]} e \texttt{[1v]} e applica il filtro \texttt{concat}, che concatena i due segmenti specificando anche numero di tracce video e audio. La traccia video risultante viene quindi selezionata come traccia del file di output (riga 6), e seguono infine alcuni parametri di codifica per l'encoder \texttt{x264} \cite{ozer}.
+La catena successiva (riga 5) considera i due segmenti etichettati \texttt{[0v]} e \texttt{[1v]} e applica il filtro \texttt{concat}, che concatena i due segmenti specificando anche numero di tracce video e audio risultanti. La traccia ottenuta viene quindi selezionata come traccia del file di output (riga 6), e seguono infine alcuni parametri di codifica per l'encoder \texttt{x264} \cite{ozer}.
 
 \footnotetext{La sigla \texttt{PTS} sta per \emph{presentation timestamp} e indica l'istante temporale in cui un fotogramma deve essere mostrato. Il filtro \texttt{trim} non modifica il timestamp dei fotogrammi tagliati, per cui senza il filtro \texttt{setpts} l'output non sarebbe quello desiderato.}
 
