@@ -1,4 +1,33 @@
 \chapter{Conclusione}
 \label{cha:conclusione}
-Lorem ipsum dolor sit amet.
+
+Nei capitoli di questa tesi sono stati approfonditi i principali aspetti legati allo sviluppo di LodeBox su sistema operativo Android. Il lavoro svolto ha avuto come esito la produzione di diversi "moduli" che risolvono problematiche specifiche, confermando infine la fattibilità di un LodeBox basato su Android.
+
+La prima e principale criticità riguarda l'acquisizione del video HDMI del computer del docente (capitolo \ref{cha:hdmi}), che deve essere affidabile e allo stesso tempo evitare di far lievitare il costo dell'hardware. Fortunatamente questo punto è stato risolto in modo soddisfacente, grazie all'individuazione di una categoria di dispositivi appositamente studiati per la realizzazione di applicazioni multimediali.
+
+Allo stesso tempo va però notato che ogni \emph{board} si comporta in modo differente, offrendo un diverso supporto alle API \texttt{Camera} o a SDK dedicati. La presenza o assenza di questi strumenti può fare la differenza per quanto riguarda la qualità della soluzione sviluppata, ed è quindi consigliabile ottenere dal produttore del dispositivo la documentazione necessaria per assicurarsi dei requisiti dell'ingresso HDMI. Alcune cose da considerare sono ad esempio la versione HDMI supportata, l'eventuale possibilità di acquisire l'audio, il supporto a HDCP\footnote{High-Bandwidth Digital Content Protection}, la risoluzione massima, ecc.
+
+Per quanto riguarda l'acquisizione di una videocamera IP tramite protocollo RTSP (capitolo \ref{cha:rtsp}), il metodo più facile e affidabile è risultato appoggiarsi a \texttt{ffmpeg}, strumento di elaborazione audio-video molto diffuso e ben mantenuto. Non risultano criticità nell'adozione di questa soluzione, al di là dei problemi di sincronizzazione intrinseci dello streaming che sono stati affrontati nel capitolo \ref{cha:sync}.
+
+Come terzo componente si ha la funzione di registrazione dell'audio di un microfono (capitolo \ref{cha:audio}). Anche in questo caso la conclusione è sintetica, perché in presenza di predisposizione hardware la registrazione può essere effettuata senza particolari problemi.
+
+I tre aspetti appena esposti costituiscono il "nocciolo" del sistema LODE. Sono stati però approfonditi altri punti che possono andare a migliorare la qualità complessiva del sistema.
+
+Si tratta innanzitutto di tentare di mascherare la presenza del sistema operativo Android, integrando diverse tecniche per ottenere una modalità \emph{kiosk}. Questa parte introduce una certa complessità nel mantenimento dell'applicazione, ad esempio per la necessità di avere un DPC (Device Policy Controller) per la gestione della modalità lock task.
+
+L'unione di tutti i metodi esposti nel capitolo \ref{cha:kiosk} consente comunque di ottenere un ottimo risultato, in modo che la presenza di un sistema operativo specifico sia quasi completamente nascosta. Fa eccezione la fase di avvio del sistema, durante la quale qualche dettaglio potrebbe svelare la presenza di Android. Per concludere con una sintesi, le tecniche analizzate sono state cinque, e cioè: la modifica dell'animazione di avvio, l'apertura automatica dell'applicazione come schermata home, la modalità lock task (per disabilitare i controlli di sistema), la modalità a schermo intero e l'impostazione dell'overscan di sistema (come alternativa alla modalità lock task).
+
+Il punto successivo riguarda la funzione di pausa della registrazione (capitolo \ref{cha:pausa}), che può essere ottenuta principalmente con due approcci. Il primo consiste nel registrare diversi spezzoni di video da unire in post-produzione, mentre il secondo nel registrare un video unico da cui poi rimuovere i segmenti indesiderati.
+
+Entrambi gli approcci hanno i loro vantaggi e svantaggi. Ad esempio, avere una registrazione contigua semplifica l'implementazione, ma non è necessariamente applicabile. Durante una lezione potrebbero infatti presentarsi eventi che costringono a interrompere la registrazione, come lo scollegamento del cavo HDMI o il cambio della risoluzione.
+
+D'altra parte, la presenza di segmenti multipli da unire in post-elaborazione rende più difficile l'integrazione con un sistema di sincronizzazione.
+
+Il capitolo \ref{cha:sync} ha infatti approfondito un sistema sperimentale per la sincronizzazione di due flussi video (HDMI e RTSP), basandosi sulla presenza di un marcatore visivo per allineare l'inizio delle due registrazioni. Questo metodo utilizza una libreria di \emph{computer vision} come \texttt{OpenCV} per estrarre il \emph{timestamp} di questo riferimento, permettendo di sincronizzare i due flussi con un po' di aritmetica e l'aiuto di \texttt{ffmpeg}.
+
+Questa tecnica può a prima vista sembrare fragile, e merita sicuramente di sperimentazioni sul campo, ma nei primi test si è rilevata una soluzione sufficientemente precisa per risolvere il problema della sincronizzazione.
+
+Infine, la funzione di cattura e invio di screenshot a un server in tempo reale ha richiesto di ideare una strategia intelligente per evitare inutili upload di immagini. La soluzione sperimentata prevede un sistema di rilevamento delle differenze tra fotogrammi ed è risultata molto soddisfacente, sia dal punto di vista delle prestazioni che della precisione dei risultati. Come visto nel capitolo \ref{cha:diff}, la tecnica si basa sulla scelta della strategia migliore per la selezione di alcuni pixel "importanti" da mettere a confronto. L'obiettivo è duplice: ridurre il più possibile il tempo di confronto mantenendo allo stesso tempo una probabilità sufficientemente alta di rilevare la presenza di differenze.
+
+Complessivamente mi ritengo molto soddisfatto del lavoro svolto, che mi ha consentito da un lato di approfondire un ambito particolare come lo sviluppo di sistemi embedded/IoT, e dall'altro di espandere e consolidare le mie conoscenze in termini di acquisizione e elaborazione del video digitale.
 
