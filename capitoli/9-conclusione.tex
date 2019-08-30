@@ -25,7 +25,7 @@ D'altra parte, la presenza di segmenti multipli da unire in post-elaborazione re
 
 Il capitolo \ref{cha:sync} ha infatti approfondito un sistema sperimentale per la sincronizzazione di due flussi video (HDMI e RTSP), basandosi sulla presenza di un marcatore visivo per allineare l'inizio delle due registrazioni. Questo metodo utilizza una libreria di \emph{computer vision} come \texttt{OpenCV} per estrarre il \emph{timestamp} di questo riferimento, permettendo di sincronizzare i due flussi con un po' di aritmetica e l'aiuto di \texttt{ffmpeg}.
 
-Questa tecnica può a prima vista sembrare fragile, e merita sicuramente di sperimentazioni sul campo, ma nei primi test si è rilevata una soluzione sufficientemente precisa per risolvere il problema della sincronizzazione.
+Questa tecnica può a prima vista sembrare fragile, e richiede sicuramente sperimentazioni sul campo, ma nei primi test si è rilevata una soluzione sufficientemente precisa per risolvere il problema della sincronizzazione.
 
 Infine, la funzione di cattura e invio di screenshot a un server in tempo reale ha richiesto di ideare una strategia intelligente per evitare inutili upload di immagini. La soluzione sperimentata prevede un sistema di rilevamento delle differenze tra fotogrammi ed è risultata molto soddisfacente, sia dal punto di vista delle prestazioni che della precisione dei risultati. Come visto nel capitolo \ref{cha:diff}, la tecnica si basa sulla scelta della strategia migliore per la selezione di alcuni pixel "importanti" da mettere a confronto. L'obiettivo è duplice: ridurre il più possibile il tempo di confronto mantenendo allo stesso tempo una probabilità sufficientemente alta di rilevare la presenza di differenze.
 
