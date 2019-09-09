@@ -7,7 +7,7 @@ Ricordando quanto mostrato nei capitoli \ref{cha:hdmi} e \ref{cha:rtsp}, prendia
 
 A partire da Android 7.0, \texttt{MediaRecorder} espone i metodi \texttt{pause()} e \texttt{resume()} per mettere in pausa e riprendere la registrazione, producendo in ogni caso un solo file video in uscita. Tuttavia, molte board multimediali non supportano Android 7.0. Si aggiunge inoltre il problema di sospendere anche la cattura \texttt{ffmpeg}.
 
-Una alternativa è quindi quella di interrompere la registrazione in corrispondenza della pausa, per poi avviarne una nuova per riprendere la registrazione. Per quanto riguarda il \texttt{MediaRecorder} questo si traduce nei metodi \texttt{stop()} e \texttt{start()}, mentre per \texttt{ffmpeg} nella chiusura del processo e l'avvio di uno nuovo.
+Una alternativa è quindi quella di interrompere la registrazione in corrispondenza della pausa, per poi avviarne una nuova. Per quanto riguarda il \texttt{MediaRecorder} questo si traduce nei metodi \texttt{stop()} e \texttt{start()}, mentre per \texttt{ffmpeg} nella chiusura del processo e l'avvio di uno nuovo.
 
 Alla fine si avranno diversi file corrispondenti agli spezzoni registrati, che possono essere rapidamente uniti ad esempio utilizzando \texttt{ffmpeg}. Nel caso in cui i video siano file MP4, l'unione dei file si può ottenere utilizzando il demuxer chiamato \texttt{concat} \cite{ffmpeg}, che permette di simulare un input di \texttt{ffmpeg} come se si trattasse di un file unico concatenato. Si deve innanzitutto creare un file \texttt{list.txt} contenente i percorsi ai segmenti da unire:
 
