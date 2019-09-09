@@ -81,7 +81,7 @@ Quando si vuole iniziare la registrazione del video, è necessario interrompere 
 \section{SDK alternativi}
 \label{sec:hdmi_sdk}
 
-Alcuni produttori forniscono degli SDK (Software Development Kit) specifici per utilizzare l'ingresso HDMI su un determinato hardware. In questi casi, le API \texttt{Camera} di Android potrebbero non essere disponibili.
+Alcuni produttori forniscono degli SDK (Software Development Kit) specifici per utilizzare l'ingresso HDMI su un determinato hardware. In questi casi, le API "camera" di Android potrebbero non essere disponibili.
 
 Inoltre, è spesso possibile sfruttare i \texttt{BroadcastReceiver} di Android per ricevere dal sistema eventi come la disconnessione e la riconnessione del cavo HDMI, e gestire quindi la sospensione e la ripresa dell'anteprima su schermo ed eventualmente della registrazione del video. Il seguente blocco di codice mostra come registrare un \texttt{BroadcastReceiver} per ricevere determinati eventi. Il \texttt{receiver} deve poi essere de-registrato alla sospensione dell'applicazione.
 

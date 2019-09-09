@@ -31,7 +31,7 @@ Questa divisione permette di applicare una tecnica chiamata sottocampionamento d
 		\includegraphics[width=\textwidth]{res/mit2.png}
 	\end{subfigure}
 	
-	\caption{Rappresentazione grafica realizzata dal MIT\protect\footnotemark{} per mostrare come l'occhio umano è molto sensibile all'intensità della luce (luminanza). L'illusione ottica fa credere che i due riquadri A e B siano di una sfumatura di grigio diversa, quando in realtà sono identici.}
+	\caption{Rappresentazione grafica realizzata dal MIT\protect\footnotemark{} per mostrare come l'occhio umano è molto sensibile all'intensità della luce (luminanza). L'illusione ottica fa credere che i due riquadri A e B siano di sfumature di grigio diverse, quando in realtà sono identici.}
 	\label{fig:diff_mit}
 \end{figure}
 
@@ -224,7 +224,7 @@ Ci sono tuttavia altri casi in cui i cambiamenti potrebbero riguardare delle are
 		\end{tikzpicture}
 	\end{subfigure}
 	
-	\caption{Anche in questo caso i punti di intersezione sono 441. Si noti però che l'area puntata dalla freccia presenta delle differenze tra i due fotogrammi che non vengono rilevate. Le immagini sono state gentilmente offerte dal professore Alberto Montresor.}
+	\caption{Anche in questo caso i punti di intersezione sono 441. Si noti però che l'area puntata dalla freccia presenta delle differenze tra i due fotogrammi che non vengono rilevate. Le immagini sono state gentilmente offerte dal professor Alberto Montresor.}
 	\label{fig:diff_slide2}
 \end{figure}
 
@@ -237,7 +237,7 @@ Si possono quindi considerare delle strategie alternative che permettono di aggi
 	\item la strategia di scegliere un numero casuale di righe e colonne può essere resa più intelligente, per evitare che la stessa coordinata orizzontale e/o verticale venga considerata in diverse combinazioni della griglia.
 \end{itemize}
 
-La strategia del primo punto è stata sperimentata su diversi contenuti e ha dato ottimi risultati. Gran parte dei cambiamenti venivano rilevati al primo controllo, e in ogni caso entro 3-4 controlli. Nei test l'intervallo di verifica delle differenze era 500 millisecondi, per cui il ritardo massimo di rilevamento risultava di circa 2 secondi.
+La strategia del secondo punto è stata sperimentata su diversi contenuti e ha dato ottimi risultati. Gran parte dei cambiamenti venivano rilevati al primo controllo, e in ogni caso entro 3-4 controlli. Nei test l'intervallo di verifica delle differenze era 500 millisecondi, per cui il ritardo massimo di rilevamento risultava di circa 2 secondi.
 
 Nei test effettuati il numero di colonne e righe della griglia veniva scelto in modo casuale ad ogni controllo, scegliendo rispettivamente dall'intervallo $[10, 20]$ e $[60, 80]$. Con questi dati, nel peggiore dei casi il numero di pixel/byte da verificare è $1\,600$, un valore estremamente limitato se confrontato con i 3 milioni di byte della sezione \ref{sec:diff_full}. Le prestazioni di questa soluzione sono risultate di conseguenza ottime, con un tempo di confronto solitamente non superiore a 1-2 millisecondi.
 
@@ -314,8 +314,8 @@ L'alternativa è quindi usare il filtro \texttt{select}, che permette di selezio
 Sono inoltre richiesti gli indici dei fotogrammi, anziché i relativi \emph{timestamp}, che vanno quindi estratti dall'output mostrato nella figura \ref{fig:diff_freezeout}. In compenso non è però necessario aggiungere un offset ai valori, perché gli indici dei fotogrammi sono già relativi a un momento successivo di 5 secondi rispetto all'inizio del freeze.
 
 \begin{minted}{bash}
-> ffmpeg -i input.mp4
-         -vf "select='eq(n,192)+eq(n,5764)+eq(n,8648)'"
+> ffmpeg -i input.mp4 \
+         -vf "select='eq(n,192)+eq(n,5764)+eq(n,8648)'" \
          -vsync 0 %d.png
 \end{minted}
 
@@ -324,7 +324,7 @@ In questo caso c'è da notare l'aggiunta dell'opzione \texttt{-vsync 0}, che ha 
 A questo punto un possibile uso dei file generati è la generazione di un mosaico, con la possibilità di configurare la dimensione delle singole immagini e il numero di colonne e righe della griglia:
 
 \begin{minted}{bash}
-> ffmpeg -i %d.png -vf "scale=200:-1,tile=5x3"
-         -frames:v 1 tile.png -y
+> ffmpeg -i %d.png -vf "scale=200:-1,tile=5x3" \
+         -frames:v 1 tiles.png -y
 \end{minted}
 

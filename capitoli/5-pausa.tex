@@ -45,7 +45,7 @@ Si supponga di avere un video di 30 secondi e che si voglia rimuovere la porzion
 Il comando seguente sfrutta le catene di filtri di \texttt{ffmpeg} per ottenere il risultato appena detto (la traccia audio viene tralasciata per semplicità).
 
 \begin{minted}[xleftmargin=\parindent,linenos]{bash}
-> ffmpeg -i input.mp4 
+> ffmpeg -i input.mp4 \
     -filter_complex \
         "[0:v]trim=start=0:end=10,setpts=PTS-STARTPTS[0v]; \
          [0:v]trim=start=20,setpts=PTS-STARTPTS[1v]; \

@@ -2,7 +2,7 @@
 \chapter{Sincronizzazione tra video e audio}
 \label{cha:sync}
 
-Nelle sezioni che seguono viene presentato il problema della sincronizzazione dei flussi video e audio, il cui effetto più evidente è lo sfasamento tra le parole e i movimenti del docente/relatore. I flussi sono acquisiti in modi diversi, per cui la sincronizzazione dell'inizio delle registrazioni non è banale. Viene quindi introdotta una soluzione che sfrutta un marcatore visivo per individuare un punto preciso e condiviso tra le registrazioni, in modo da poterle allineare.
+Nelle sezioni che seguono viene presentato il problema della sincronizzazione dei flussi video e audio, il cui effetto più evidente è lo sfasamento tra le parole e i movimenti del docente/relatore. I flussi sono acquisiti in modi diversi, per cui la sincronizzazione dell'inizio delle registrazioni non è banale. Viene qui introdotta una soluzione che sfrutta un marcatore visivo per individuare un punto preciso e condiviso tra le registrazioni, in modo da poterle allineare.
 
 \section{Definizione del problema}
 \label{sec:sync_problema}
@@ -119,13 +119,13 @@ findViewById(R.id.rect).setVisibility(View.VISIBLE);
 
 A questo punto è necessario fare uso di timer e ritardi appositamente studiati per ottenere la situazione dello schema della figura \ref{fig:sync1}, cioè fare in modo che la videocamera riprenda il momento in cui la schermata verde viene abilitata.
 
-Passando alla fase di post-elaborazione del materiale acquisito, l'obiettivo principale è riuscire a ricavare dalla registrazione RTSP il tempo in cui compare il marcatore visivo, e cioè l'intervallo A della figura \ref{fig:sync2}. Per fare ciò è possibile usare \texttt{OpenCV}, una nota libreria di visione artificiale.
+Passando alla fase di post-elaborazione del materiale acquisito, l'obiettivo principale è riuscire a ricavare dalla registrazione RTSP il tempo in cui compare il marcatore visivo, cioè l'intervallo A della figura \ref{fig:sync2}. Per fare ciò è possibile usare \texttt{OpenCV}, una nota libreria di visione artificiale.
 
 Più in dettaglio, la tecnica sperimentata consiste nel calcolare la media delle tre componenti di colore RGB per ciascun fotogramma, e di provare poi a rilevare le variazioni significative di verde. Concettualmente, il parametro da considerare per individuare le variazioni è la "distanza" tra il colore verde e le altre componenti di colore, e cioè, in formula, $G - \frac{R+B}{2}$. Il blocco di codice che segue calcola questa distanza per ogni fotogramma del video. 
 
 \inputminted[xleftmargin=\parindent,linenos]{python}{res/opencv.py}
 
-Per comprendere meglio cosa sta succedendo, conviene usare una rappresentazione grafica dei dati raccolti. La figura \ref{fig:sync_opencv1} mostra la variazione nel tempo delle tre coordinate RGB di un video in cui al secondo 6 gran parte dello schermo ripreso diventa verde (figura \ref{fig:sync_video}). Dal grafico è certamente evidente che al secondo 6 c'è un cambiamento significativo e che il valore del verde aumenta leggermente, ma se si osserva meglio non risulta in realtà così facile individuare con precisione e in modo automatizzato l'istante di inizio e fine della schermata verde.
+Per comprendere meglio cosa sta succedendo, conviene usare una rappresentazione grafica dei dati raccolti. La figura \ref{fig:sync_opencv1} mostra la variazione nel tempo delle tre coordinate RGB di un video in cui al secondo 6 gran parte dello schermo ripreso diventa verde (figura \ref{fig:sync_video}). Dal grafico è certamente evidente che al secondo 6 avviene un cambiamento significativo e che il valore del verde aumenta leggermente, ma se si osserva meglio non risulta in realtà così facile individuare con precisione e in modo automatizzato l'istante di inizio e fine della schermata verde.
 
 \begin{figure}[htbp]
 	\centering

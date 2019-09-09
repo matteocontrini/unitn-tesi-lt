@@ -30,7 +30,7 @@ La scatola include un modulo "HDMI to MIPI CSI-2", che permette di convertire il
 
 \footnotetext{H.264, conosciuto anche come AVC o MPEG-4 Part-10, è il più popolare codec di compressione video. Nato nel 2003, è ancora oggi lo standard de facto in numerosi ambiti, tra cui lo streaming video.}
 
-Sempre in ottica di riduzione dei costi, LodeBox prevede la ripresa del docente tramite una qualsiasi videocamera IP (wireless o cablata) che supporti il protocollo RTSP (Real Time Streaming Protocol). La registrazione avviene sul dispositivo utilizzando \texttt{ffmpeg}/\texttt{avconv}\footnotemark{} in modalità copia (senza codifica), richiedendo quindi un uso molto basso di risorse.
+Sempre in ottica di riduzione dei costi, LodeBox prevede la ripresa del docente tramite una qualsiasi videocamera IP (wireless o cablata) che supporti il protocollo RTSP (Real Time Streaming Protocol). La registrazione avviene sul dispositivo utilizzando \texttt{ffmpeg}/\texttt{avconv}\footnotemark{} in modalità copia (senza ricodifica), richiedendo quindi un uso molto basso di risorse.
 
 \footnotetext{\emph{ffmpeg} è uno strumento estremamente popolare per l'elaborazione di video e audio tramite linea di comando. Supporta numerosi formati, codec e protocolli, e permette di effettuare operazioni quali il muxing, transmuxing, transcoding e altre funzioni più avanzate. \emph{avconv} è un fork di ffmpeg nato per via di divergenze sui metodi di sviluppo, ed è stato incluso per un breve periodo in alcune distribuzioni Linux in sostituzione di ffmpeg.}
 
