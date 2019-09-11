@@ -34,7 +34,7 @@ Sempre in ottica di riduzione dei costi, LodeBox prevede la ripresa del docente 
 
 \footnotetext{\emph{ffmpeg} è uno strumento estremamente popolare per l'elaborazione di video e audio tramite linea di comando. Supporta numerosi formati, codec e protocolli, e permette di effettuare operazioni quali il muxing, transmuxing, transcoding e altre funzioni più avanzate. \emph{avconv} è un fork di ffmpeg nato per via di divergenze sui metodi di sviluppo, ed è stato incluso per un breve periodo in alcune distribuzioni Linux in sostituzione di ffmpeg.}
 
-Raspberry Pi non prevede spazio di archiviazione interno, e richiede quindi di utilizzare una scheda microSD per memorizzare le registrazioni. Le memorie di tipo flash hanno però vita limitata, a seconda di quanto intensivamente sono utilizzate, e questo riduce di conseguenza l'affidabilità a lungo termine del sistema.
+Raspberry Pi non prevede spazio di archiviazione interno, e richiede quindi di utilizzare una scheda microSD o una chiavetta USB per memorizzare le registrazioni. Le memorie di tipo flash hanno però vita limitata, a seconda di quanto intensivamente sono utilizzate, e questo riduce di conseguenza l'affidabilità a lungo termine del sistema. Inoltre, la soluzione di usare la porta USB non risulta percorribile, per via delle prestazioni molto scarse che impediscono di registrare tre flussi in contemporanea.
 
 Un altro svantaggio di questa soluzione è il livello di "fault tolerance" in caso di eventi come la disconnessione (volontaria o meno) del cavo HDMI in ingresso. Dato che l'input HDMI è mappato sull'interfaccia della fotocamera, non è previsto che la fotocamera possa essere improvvisamente scollegata. Secondo le prove effettuate, risulta molto difficile rilevare in modo affidabile la disconnessione del cavo HDMI. Nei casi in cui è possibile, non risulta invece fattibile il recupero dell'applicazione, perché le operazioni sulla \texttt{PiCamera} sollevano eccezioni o bloccano indefinitamente l'esecuzione del codice.
 
@@ -43,7 +43,11 @@ Infine, un altro problema è posto dalla presenza del modulo di conversione HDMI
 \section{Hardware alternativo}
 \label{sec:intro_hardware}
 
-Per poter evolvere LodeBox in una soluzione più affidabile e adatta alla produzione e distribuzione, si sono quindi cercate SBC (Single-Board Computer) alternative, preferibilmente pensate per la realizzazione di applicazioni multimediali. I principali vincoli per la scelta di una nuova scheda erano la presenza dell'input HDMI e di un encoder H.264 hardware, la possibilità di collegare un microfono e il costo accessibile.
+Per poter evolvere LodeBox in una soluzione più affidabile e adatta alla produzione e distribuzione, si sono quindi cercate SBC (Single-Board Computer) alternative, preferibilmente pensate per la realizzazione di applicazioni multimediali.
 
-Molte board con sistema operativo Android soddisfano questi requisiti, e consentono inoltre di avere a disposizione una piattaforma nota, documentata, di facile sviluppo e per cui sono disponibili molte risorse. In molti casi l'input HDMI è reso disponibile tramite l'interfaccia della fotocamera CSI, da cui deriva la possibilità di acquisire l'input tramite le API di Android per l'accesso alla fotocamera.
+Dal punto di vista tecnico, i principali vincoli per la scelta di una nuova scheda erano la presenza dell'input HDMI e di un encoder H.264 hardware, la possibilità di collegare un microfono e il costo accessibile.
+
+Le soluzioni considerate erano inoltre di tipo pre-industriale, quindi non necessariamente già presenti sul mercato ma personalizzabili per soddisfare i requisiti del prodotto, e offrivano anche determinate garanzie di disponibilità e supporto per un periodo di tempo prolungato.
+
+Molte board con sistema operativo Android soddisfano queste caratteristiche, e consentono in aggiunta di avere a disposizione una piattaforma nota, documentata, di facile sviluppo e per cui sono disponibili molte risorse. In molti casi l'input HDMI è reso disponibile tramite l'interfaccia della fotocamera CSI, da cui deriva la possibilità di acquisire l'input tramite le API di Android per l'accesso alla fotocamera.
 
